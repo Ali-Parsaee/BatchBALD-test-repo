@@ -101,10 +101,12 @@ def artificially_censor(
     artificial_event = event.copy()
 
     for idx in idx_to_censor:
-        original_time = time[idx]
-        if original_time > 0:
+        original_time = int(time[idx])
+        if original_time > 1:
             # Censor at random time between 0 and original time
             artificial_time[idx] = np.random.randint(0, original_time)
+        elif original_time == 1:
+            artificial_time[idx] = 0
         else:
             artificial_time[idx] = 0
         # Mark as censored
