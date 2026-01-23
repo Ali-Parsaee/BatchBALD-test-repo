@@ -138,14 +138,14 @@ def test_strategy(strategy_name, score_func, data, probe_depth=3, batch_size=30,
             time_train_cont, time_train_bin, event_train, proportion=0.5, random_state=42 + run
         )
 
-        # Train initial model with CONTINUOUS times
+        # Train initial model with BINNED times (model expects discrete bins)
         model_init = BayesianSurvivalModel(
             n_features=X_train.shape[1],
             n_time_bins=n_time_bins,
             n_ensemble=5,
             hidden_size=64
         )
-        model_init.fit(X_train, artificial_time_cont, artificial_event, epochs=30, batch_size=32, verbose=False)
+        model_init.fit(X_train, artificial_time_bin, artificial_event, epochs=30, batch_size=32, verbose=False)
 
         # Test performance
         test_preds_init = model_init.predict_proba(X_test)
@@ -213,14 +213,15 @@ def test_strategy(strategy_name, score_func, data, probe_depth=3, batch_size=30,
 
         print(f"      Selected {batch_size_use}, revealed {n_revealed} events")
 
-        # Retrain with CONTINUOUS times
+        # Retrain with BINNED times (model expects discrete bins)
+        # updated_time_bin already has the updated values from oracle
         model_updated = BayesianSurvivalModel(
             n_features=X_train.shape[1],
             n_time_bins=n_time_bins,
             n_ensemble=5,
             hidden_size=64
         )
-        model_updated.fit(X_train, updated_time_cont, updated_event, epochs=30, batch_size=32, verbose=False)
+        model_updated.fit(X_train, updated_time_bin, updated_event, epochs=30, batch_size=32, verbose=False)
 
         # Evaluate
         test_preds_updated = model_updated.predict_proba(X_test)
