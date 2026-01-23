@@ -186,24 +186,30 @@ def test_strategy(strategy_name, score_func, data, probe_depth=3, batch_size=30,
         # Convert updated BINNED times back to approximate CONTINUOUS times for training
         # For newly revealed deaths, use a random time within the bin
         updated_time_cont = artificial_time_cont.copy()
+        max_time = bin_edges[-1]  # Maximum valid time
+
         for idx in selected:
             if updated_event[idx] == 1 and artificial_event[idx] == 0:
                 # Death revealed - estimate continuous time
-                revealed_bin = updated_time_bin[idx]
+                revealed_bin = int(updated_time_bin[idx])
                 if revealed_bin < len(bin_edges) - 1:
                     # Random time within the bin
                     bin_start = bin_edges[revealed_bin]
                     bin_end = bin_edges[revealed_bin + 1]
                     updated_time_cont[idx] = np.random.uniform(bin_start, bin_end)
                 else:
-                    updated_time_cont[idx] = bin_edges[revealed_bin]
+                    # Last bin - use edge
+                    updated_time_cont[idx] = min(bin_edges[revealed_bin], max_time * 0.99)
             elif updated_event[idx] == 0 and updated_time_bin[idx] != artificial_time_bin[idx]:
                 # Censoring extended - use bin midpoint
-                new_bin = updated_time_bin[idx]
+                new_bin = int(updated_time_bin[idx])
                 if new_bin < len(bin_edges) - 1:
                     updated_time_cont[idx] = (bin_edges[new_bin] + bin_edges[new_bin + 1]) / 2
                 else:
-                    updated_time_cont[idx] = bin_edges[new_bin]
+                    updated_time_cont[idx] = min(bin_edges[new_bin], max_time * 0.99)
+
+        # Ensure all times are within valid range
+        updated_time_cont = np.clip(updated_time_cont, 0, max_time * 0.99)
 
         print(f"      Selected {batch_size_use}, revealed {n_revealed} events")
 
