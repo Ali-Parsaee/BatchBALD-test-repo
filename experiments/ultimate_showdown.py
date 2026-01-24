@@ -162,7 +162,7 @@ def test_strategy(
                     artificial_time,
                     batch_size,
                     artificial_event,
-                    use_greedy=False  # Use top-k for speed
+                    greedy=False  # Use top-k for speed
                 )
             else:
                 # Plain BatchBALD or Weighted BatchBALD

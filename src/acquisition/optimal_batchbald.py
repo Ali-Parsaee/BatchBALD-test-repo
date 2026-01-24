@@ -277,7 +277,7 @@ class OptimalBatchBALD:
         current_time: np.ndarray,
         batch_size: int,
         current_event: Optional[np.ndarray] = None,
-        use_greedy: bool = True
+        greedy: bool = False
     ) -> np.ndarray:
         """
         Select batch with optional greedy diversity.
@@ -288,7 +288,7 @@ class OptimalBatchBALD:
             current_time: (N,) censoring times
             batch_size: Number of samples to select
             current_event: (N,) event indicators
-            use_greedy: If True, use greedy selection for diversity
+            greedy: If True, use greedy selection for diversity
 
         Returns:
             selected_indices: Selected sample indices
@@ -298,7 +298,7 @@ class OptimalBatchBALD:
         if current_event is None:
             current_event = np.zeros(N)
 
-        if not use_greedy:
+        if not greedy:
             # Simple top-k selection
             scores = self.compute_scores(oracle_probs, predictions, current_time, current_event)
             selected = np.argsort(scores)[::-1][:batch_size]
