@@ -71,7 +71,7 @@ def artificially_censor(
     event: np.ndarray,
     proportion: float = 0.5,
     random_state: int = None
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Artificially censor a proportion of the training data.
 
@@ -87,23 +87,38 @@ def artificially_censor(
     Returns:
         artificial_time: New censoring times
         artificial_event: New event indicators (0 for artificially censored)
+        can_query: Boolean mask indicating which points can be queried by oracle
+                   (False if artificial_time == true_time with event=0, nothing to learn)
     """
     if random_state is not None:
         np.random.seed(random_state)
 
     n_samples = len(time)
-    n_to_censor = int(n_samples * proportion)
 
-    # Randomly select indices to artificially censor
-    idx_to_censor = np.random.choice(n_samples, n_to_censor, replace=False)
+    # Select from ALL samples (both censored and uncensored) with time > 0
+    eligible_idx = np.where(time > 0)[0]
+    n_to_censor = int(len(eligible_idx) * proportion)
 
     artificial_time = time.copy()
     artificial_event = event.copy()
+    can_query = np.ones(n_samples, dtype=bool)
+
+    if n_to_censor == 0 or len(eligible_idx) == 0:
+        # Mark points that can't learn anything (already at true time and censored)
+        for i in range(n_samples):
+            if artificial_time[i] == time[i] and event[i] == 0:
+                can_query[i] = False
+            if artificial_event[i] == 1:
+                can_query[i] = False
+        return artificial_time, artificial_event, can_query
+
+    # Randomly select indices to artificially censor
+    idx_to_censor = np.random.choice(eligible_idx, min(n_to_censor, len(eligible_idx)), replace=False)
 
     for idx in idx_to_censor:
         original_time = int(time[idx])
         if original_time > 1:
-            # Censor at random time between 0 and original time
+            # Censor at random time between 0 and original time (exclusive)
             artificial_time[idx] = np.random.randint(0, original_time)
         elif original_time == 1:
             artificial_time[idx] = 0
@@ -112,7 +127,17 @@ def artificially_censor(
         # Mark as censored
         artificial_event[idx] = 0
 
-    return artificial_time, artificial_event
+    # Mark points that can't be queried:
+    # 1. Already uncensored (event=1)
+    # 2. artificial_time == true_time and already censored (nothing to learn)
+    for i in range(n_samples):
+        if artificial_event[i] == 1:
+            can_query[i] = False
+        elif artificial_time[i] == time[i] and event[i] == 0:
+            # At true censoring time, oracle can't reveal more
+            can_query[i] = False
+
+    return artificial_time, artificial_event, can_query
 
 
 def split_data(

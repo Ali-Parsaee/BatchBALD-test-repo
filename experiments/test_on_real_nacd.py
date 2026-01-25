@@ -27,26 +27,49 @@ except Exception as e:
 
 
 def artificially_censor(time, event, proportion=0.5, random_state=None):
-    """Artificially censor a proportion of samples."""
+    """
+    Artificially censor a proportion of samples.
+
+    Now censors BOTH uncensored and already-censored samples (further censoring).
+    Also returns mask of which points can be meaningfully queried by oracle.
+    """
     if random_state is not None:
         np.random.seed(random_state)
 
     artificial_time = time.copy()
     artificial_event = event.copy()
+    n_samples = len(time)
+    can_query = np.ones(n_samples, dtype=bool)
 
-    # Select samples to censor
-    uncensored_idx = np.where(event == 1)[0]
-    n_to_censor = int(len(uncensored_idx) * proportion)
-    idx_to_censor = np.random.choice(uncensored_idx, size=n_to_censor, replace=False)
+    # Select from ALL samples with time > 0 (both censored and uncensored)
+    eligible_idx = np.where(time > 0)[0]
+    n_to_censor = int(len(eligible_idx) * proportion)
+
+    if n_to_censor == 0 or len(eligible_idx) == 0:
+        for i in range(n_samples):
+            if artificial_event[i] == 1:
+                can_query[i] = False
+            elif artificial_time[i] == time[i] and event[i] == 0:
+                can_query[i] = False
+        return artificial_time, artificial_event, can_query
+
+    idx_to_censor = np.random.choice(eligible_idx, size=min(n_to_censor, len(eligible_idx)), replace=False)
 
     # Censor at random time < original_time
     for idx in idx_to_censor:
         original_time = time[idx]
         if original_time > 0:
-            artificial_time[idx] = np.random.randint(0, max(1, int(original_time)))
+            artificial_time[idx] = np.random.uniform(0, original_time)
         artificial_event[idx] = 0
 
-    return artificial_time, artificial_event
+    # Mark points that can't be queried
+    for i in range(n_samples):
+        if artificial_event[i] == 1:
+            can_query[i] = False
+        elif np.isclose(artificial_time[i], time[i]) and event[i] == 0:
+            can_query[i] = False
+
+    return artificial_time, artificial_event, can_query
 
 
 class SimpleOracle:
@@ -191,7 +214,7 @@ def test_strategy(strategy_name, score_func, data, args, n_runs=3, probe_depth=3
         true_train_time = time_train.copy()
         true_train_event = event_train.copy()
 
-        artificial_time, artificial_event = artificially_censor(
+        artificial_time, artificial_event, can_query = artificially_censor(
             time_train, event_train, proportion=0.5, random_state=42 + run
         )
 
@@ -229,8 +252,8 @@ def test_strategy(strategy_name, score_func, data, args, n_runs=3, probe_depth=3
         # Compute scores with strategy
         scores = score_func(train_preds, artificial_time, artificial_event, X_train, bins)
 
-        # Filter out already uncensored
-        scores[artificial_event == 1] = -np.inf
+        # Filter out points that can't be queried (uncensored or at true censor time)
+        scores[~can_query] = -np.inf
 
         # Select top batch
         valid_scores = scores[scores > -np.inf]
