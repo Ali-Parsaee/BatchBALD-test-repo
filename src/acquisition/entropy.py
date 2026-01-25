@@ -2,6 +2,8 @@ import numpy as np
 from typing import Optional
 from scipy.special import xlogy
 
+from src.acquisition.batchbald import get_queryable_mask
+
 
 class EntropyAcquisition:
     """
@@ -16,7 +18,10 @@ class EntropyAcquisition:
     def compute_scores(
         self,
         predictions: np.ndarray,
-        current_event: Optional[np.ndarray] = None
+        current_event: Optional[np.ndarray] = None,
+        artificial_time: Optional[np.ndarray] = None,
+        true_time: Optional[np.ndarray] = None,
+        true_event: Optional[np.ndarray] = None
     ) -> np.ndarray:
         """
         Compute entropy scores.
@@ -24,6 +29,9 @@ class EntropyAcquisition:
         Args:
             predictions: (K, N, T) probability predictions
             current_event: (N,) event indicators
+            artificial_time: (N,) artificial censoring times
+            true_time: (N,) true times (before artificial censoring)
+            true_event: (N,) true event indicators (before artificial censoring)
 
         Returns:
             scores: (N,) entropy scores (higher = more uncertain)
@@ -36,9 +44,12 @@ class EntropyAcquisition:
         # Compute entropy: H(p) = -sum p log p
         entropy = -np.sum(xlogy(mean_probs, mean_probs), axis=1)  # (N,)
 
-        # Set score to -inf for already uncensored
-        if current_event is not None:
-            entropy[current_event == 1] = -np.inf
+        # Set score to -inf for non-queryable points
+        queryable_mask = get_queryable_mask(
+            current_event, artificial_time, true_time, true_event
+        )
+        if queryable_mask is not None:
+            entropy[~queryable_mask] = -np.inf
 
         return entropy
 
@@ -46,7 +57,10 @@ class EntropyAcquisition:
         self,
         predictions: np.ndarray,
         batch_size: int,
-        current_event: Optional[np.ndarray] = None
+        current_event: Optional[np.ndarray] = None,
+        artificial_time: Optional[np.ndarray] = None,
+        true_time: Optional[np.ndarray] = None,
+        true_event: Optional[np.ndarray] = None
     ) -> np.ndarray:
         """
         Select batch with highest entropy.
@@ -55,11 +69,16 @@ class EntropyAcquisition:
             predictions: (K, N, T) predictions
             batch_size: Number to select
             current_event: (N,) event indicators
+            artificial_time: (N,) artificial censoring times
+            true_time: (N,) true times (before artificial censoring)
+            true_event: (N,) true event indicators (before artificial censoring)
 
         Returns:
             selected_indices: (batch_size,) selected indices
         """
-        scores = self.compute_scores(predictions, current_event)
+        scores = self.compute_scores(
+            predictions, current_event, artificial_time, true_time, true_event
+        )
 
         # Select top-k
         selected_indices = np.argsort(scores)[::-1][:batch_size]

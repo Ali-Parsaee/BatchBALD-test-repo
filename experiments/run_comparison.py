@@ -150,13 +150,19 @@ def run_single_experiment(
             selected_indices = acq_func.select_batch(
                 oracle_probs,
                 batch_size=batch_size,
-                current_event=artificial_event
+                current_event=artificial_event,
+                artificial_time=artificial_time,
+                true_time=true_train_time,
+                true_event=true_train_event
             )
         else:
             selected_indices = acq_func.select_batch(
                 train_preds,
                 batch_size=batch_size,
-                current_event=artificial_event
+                current_event=artificial_event,
+                artificial_time=artificial_time,
+                true_time=true_train_time,
+                true_event=true_train_event
             )
 
         print(f"Selected {len(selected_indices)} samples")

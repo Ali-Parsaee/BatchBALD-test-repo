@@ -9,6 +9,90 @@ BatchBALD shows marginal advantage (+0.0105 Δ C-index) over baselines but is **
 
 ---
 
+## Problem Setting (Detailed)
+
+This section explains the complete problem setting for this active learning framework.
+
+### 1. Survival Data with Discrete Time Bins
+
+Survival times are discretized into **time bins** (e.g., bin 0, 1, 2, ..., T). The model is a **Bayesian ensemble** that outputs predictions with shape `(K, N, T)`:
+- **K**: Number of samples from the model (ensemble members)
+- **N**: Number of data instances
+- **T**: Number of time bins
+
+### 2. The Probe Depth / Increment Constraint
+
+The oracle operates with a **probe depth** (also called **increment**) of `k` bins. This means:
+- The oracle can only reveal information up to `k` bins beyond the current censoring time
+- If a sample is censored at bin `c`, the oracle can reveal what happens up to bin `c + k`
+
+**Examples with probe_depth = 2:**
+- Sample censored at bin 5, true death at bin 6 → Oracle reveals **death at bin 6** (within probe range)
+- Sample censored at bin 5, true death at bin 9 → Oracle reveals **censored at bin 7** (death beyond probe range)
+- Sample with true censoring at bin 8, artificially censored at bin 5 → Oracle reveals **censored at bin 7** (reaches artificial limit, true censoring at 8)
+
+### 3. Artificial Censoring Process
+
+The training data contains both censored (event=0) and uncensored (event=1) instances. We apply **artificial censoring** to a proportion of training samples:
+
+1. Select a proportion of samples to artificially censor
+2. For each selected sample:
+   - `artificial_time` = random time between 0 and `true_time` (exclusive)
+   - `artificial_event` = 0 (always censored after artificial censoring)
+3. This creates "room" for the oracle to reveal information
+
+**Effect by original event type:**
+- **Uncensored (event=1)**: Death time becomes hidden; sample appears censored at an earlier time
+- **Already censored (event=0)**: Censoring time moves earlier; sample is further censored
+
+### 4. Points Excluded from Acquisition
+
+Certain points should **NOT** be selected by acquisition functions:
+
+1. **Already uncensored (artificial_event = 1)**: Nothing to learn
+2. **No information gain (artificial_time == true_time AND true_event == 0)**: These are naturally censored points that weren't artificially censored further. The oracle cannot reveal anything beyond their true censoring time.
+
+### 5. Oracle Query Process
+
+When the acquisition function selects points:
+
+```
+For each selected point at index i:
+    c = artificial_time[i]  # Current (artificial) censoring time
+    max_observable = c + probe_depth
+
+    if true_event[i] == 1:  # True outcome is death
+        if true_time[i] <= max_observable:
+            # Death is within probe range - REVEAL IT
+            updated_time[i] = true_time[i]
+            updated_event[i] = 1
+        else:
+            # Death is beyond probe range - extend censoring
+            updated_time[i] = max_observable
+            updated_event[i] = 0
+    else:  # True outcome is censoring
+        # Extend to min of true censoring and probe limit
+        updated_time[i] = min(true_time[i], max_observable)
+        updated_event[i] = 0
+```
+
+### 6. Single-Shot Evaluation
+
+This is a **single-shot** active learning setting:
+1. Acquisition function selects a batch of points **once**
+2. Oracle decensors the selected points
+3. Model is retrained with the updated labels
+4. Model is evaluated on the test set (which is NOT artificially censored)
+5. Methods are compared based on this single round's performance
+
+**This differs from traditional iterative active learning** where multiple query rounds occur.
+
+### 7. Strategic Insight
+
+The acquisition function benefits from selecting points where **true death is likely within the probe depth** of the artificial censoring time. These points will reveal the most information (actual death events) rather than just extending censoring times.
+
+---
+
 ## Repository Structure
 
 ```
@@ -279,11 +363,13 @@ def query(indices, current_time, current_event):
 
 2. **Shape Mismatches**: Always verify tensor shapes match expected `(K, N, T)` format for predictions and `(K, N, k+1)` for oracle probabilities.
 
-3. **Uncensored Sample Handling**: Already uncensored samples (event=1) should be excluded from acquisition function computation.
+3. **Uncensored Sample Handling**: Already uncensored samples (artificial_event=1) should be excluded from acquisition function computation.
 
-4. **Numerical Stability**: Use `scipy.special.xlogy` for entropy computations to handle `0 * log(0) = 0`.
+4. **No-Information-Gain Points**: Points where `artificial_time == true_time` AND `true_event == 0` must be excluded. These are naturally censored points that weren't artificially censored further, so querying them provides zero information gain.
 
-5. **Discrete Time Bins**: Models expect discrete bin indices (integers), not continuous times.
+5. **Numerical Stability**: Use `scipy.special.xlogy` for entropy computations to handle `0 * log(0) = 0`.
+
+6. **Discrete Time Bins**: Models expect discrete bin indices (integers), not continuous times.
 
 ---
 
@@ -294,10 +380,11 @@ def query(indices, current_time, current_event):
 1. Create a new file in `src/acquisition/`
 2. Implement a class with:
    - `__init__(self, probe_depth: int)`
-   - `compute_scores(self, oracle_probs: np.ndarray, current_event: Optional[np.ndarray]) -> np.ndarray`
-   - `select_batch(self, oracle_probs: np.ndarray, batch_size: int, current_event: Optional[np.ndarray]) -> np.ndarray`
-3. Add tests in `tests/test_acquisition.py`
-4. Import in experiment scripts
+   - `compute_scores(self, predictions, current_event, artificial_time, true_time, true_event) -> np.ndarray`
+   - `select_batch(self, predictions, batch_size, current_event, artificial_time, true_time, true_event) -> np.ndarray`
+3. Use `get_queryable_mask()` from `src/acquisition/batchbald.py` to properly exclude non-queryable points
+4. Add tests in `tests/test_acquisition.py`
+5. Import in experiment scripts
 
 ### Adding a New Dataset
 

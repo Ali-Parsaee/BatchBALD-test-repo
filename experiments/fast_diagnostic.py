@@ -108,11 +108,15 @@ def run_fast_experiment(random_state=42):
                 train_preds, artificial_time, artificial_event
             )
             selected_indices = acq_func.select_batch(
-                oracle_probs, batch_size=batch_size, current_event=artificial_event
+                oracle_probs, batch_size=batch_size, current_event=artificial_event,
+                artificial_time=artificial_time, true_time=true_train_time,
+                true_event=true_train_event
             )
         else:
             selected_indices = acq_func.select_batch(
-                train_preds, batch_size=batch_size, current_event=artificial_event
+                train_preds, batch_size=batch_size, current_event=artificial_event,
+                artificial_time=artificial_time, true_time=true_train_time,
+                true_event=true_train_event
             )
 
         # Query oracle

@@ -3,6 +3,45 @@ from typing import Optional
 from scipy.special import xlogy
 
 
+def get_queryable_mask(
+    current_event: Optional[np.ndarray] = None,
+    artificial_time: Optional[np.ndarray] = None,
+    true_time: Optional[np.ndarray] = None,
+    true_event: Optional[np.ndarray] = None
+) -> Optional[np.ndarray]:
+    """
+    Compute mask of points that can be queried (have potential information gain).
+
+    A point is NOT queryable if:
+    - current_event == 1 (already uncensored)
+    - artificial_time == true_time AND true_event == 0 (no information gain possible)
+
+    Args:
+        current_event: (N,) current event indicators (artificial_event)
+        artificial_time: (N,) artificial censoring times
+        true_time: (N,) true times (before artificial censoring)
+        true_event: (N,) true event indicators (before artificial censoring)
+
+    Returns:
+        queryable_mask: (N,) boolean mask where True = can be queried
+    """
+    if current_event is None:
+        return None
+
+    N = len(current_event)
+    queryable_mask = np.ones(N, dtype=bool)
+
+    # Exclude already uncensored points
+    queryable_mask[current_event == 1] = False
+
+    # Exclude points with no information gain (artificial_time == true_time AND true_event == 0)
+    if artificial_time is not None and true_time is not None and true_event is not None:
+        no_info_gain = (artificial_time == true_time) & (true_event == 0)
+        queryable_mask[no_info_gain] = False
+
+    return queryable_mask
+
+
 class SurvivalBatchBALD:
     """
     BatchBALD acquisition function for survival analysis with probe depth.
@@ -92,7 +131,10 @@ class SurvivalBatchBALD:
         self,
         oracle_probs: np.ndarray,
         batch_size: int,
-        current_event: Optional[np.ndarray] = None
+        current_event: Optional[np.ndarray] = None,
+        artificial_time: Optional[np.ndarray] = None,
+        true_time: Optional[np.ndarray] = None,
+        true_event: Optional[np.ndarray] = None
     ) -> np.ndarray:
         """
         Select batch using greedy BatchBALD approximation.
@@ -101,6 +143,9 @@ class SurvivalBatchBALD:
             oracle_probs: (K, N, k+1) oracle outcome probabilities
             batch_size: Number of samples to select
             current_event: (N,) event indicators (to filter already uncensored)
+            artificial_time: (N,) artificial censoring times
+            true_time: (N,) true times (before artificial censoring)
+            true_event: (N,) true event indicators (before artificial censoring)
 
         Returns:
             selected_indices: (batch_size,) indices of selected samples
@@ -109,10 +154,13 @@ class SurvivalBatchBALD:
         selected = []
         remaining = set(range(N))
 
-        # Filter out already uncensored samples
-        if current_event is not None:
+        # Get mask of queryable points (excludes uncensored and no-info-gain points)
+        queryable_mask = get_queryable_mask(
+            current_event, artificial_time, true_time, true_event
+        )
+        if queryable_mask is not None:
             for i in range(N):
-                if current_event[i] == 1:
+                if not queryable_mask[i]:
                     remaining.discard(i)
 
         if len(remaining) == 0:
@@ -189,7 +237,10 @@ class SurvivalBatchBALD:
     def compute_scores(
         self,
         oracle_probs: np.ndarray,
-        current_event: Optional[np.ndarray] = None
+        current_event: Optional[np.ndarray] = None,
+        artificial_time: Optional[np.ndarray] = None,
+        true_time: Optional[np.ndarray] = None,
+        true_event: Optional[np.ndarray] = None
     ) -> np.ndarray:
         """
         Compute acquisition scores (mutual information) for all instances.
@@ -197,14 +248,20 @@ class SurvivalBatchBALD:
         Args:
             oracle_probs: (K, N, k+1)
             current_event: (N,) event indicators
+            artificial_time: (N,) artificial censoring times
+            true_time: (N,) true times (before artificial censoring)
+            true_event: (N,) true event indicators (before artificial censoring)
 
         Returns:
             scores: (N,) acquisition scores
         """
         scores = self.compute_mutual_information(oracle_probs)
 
-        # Set score to -inf for already uncensored
-        if current_event is not None:
-            scores[current_event == 1] = -np.inf
+        # Set score to -inf for non-queryable points
+        queryable_mask = get_queryable_mask(
+            current_event, artificial_time, true_time, true_event
+        )
+        if queryable_mask is not None:
+            scores[~queryable_mask] = -np.inf
 
         return scores

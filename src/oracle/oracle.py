@@ -111,9 +111,13 @@ class Oracle:
         oracle_probs_list = []
 
         for i in range(N):
-            if current_event[i] == 1:
-                # Already uncensored - no oracle query needed
-                # Return uniform (this shouldn't be queried anyway)
+            # Check if this point is non-queryable
+            is_uncensored = current_event[i] == 1
+            # Check for no-info-gain: current_time == true_time AND true_event == 0
+            no_info_gain = (current_time[i] == self.true_time[i]) and (self.true_event[i] == 0)
+
+            if is_uncensored or no_info_gain:
+                # No oracle query needed - return uniform (shouldn't be queried anyway)
                 oracle_probs_list.append(np.ones(self.probe_depth + 1) / (self.probe_depth + 1))
                 continue
 
