@@ -144,8 +144,9 @@ def make_nacd_data():
     # Try multiple possible paths
     possible_paths = [
         "data/NACD/NACD_Full.csv",
-        "BNN-ISD-main/data/NACD/NACD_Full.csv",
+        "data/MIMIC/NACD/NACD_Full.csv",
         "../data/NACD/NACD_Full.csv",
+        "../data/MIMIC/NACD/NACD_Full.csv",
     ]
     
     data = None

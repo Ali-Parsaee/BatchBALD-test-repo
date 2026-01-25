@@ -332,9 +332,19 @@ def General_Function(dataset="NACD", initial_data_config=[100, 1000], increments
             
             if verbose:
                 print(f"\nRunning {acquisition_function.__name__}...")
-            
-            # Get censored pool
-            censored_list = list(censored_indices_copy)
+
+            # Get censored pool - filter out points where artificial_time == true_time
+            # (nothing to learn from these points as oracle can't reveal more info)
+            learnable_censored = [idx for idx in censored_indices_copy
+                                  if y_labeled_copy[idx] < y_train[idx]]
+            censored_list = list(learnable_censored)
+
+            if len(censored_list) == 0:
+                if verbose:
+                    print(f"  No learnable censored points remaining, skipping {acquisition_function.__name__}")
+                acquisition_results[acquisition_function.__name__] = results
+                continue
+
             X_censored = X_labeled_copy[censored_list]
             
             model_data_censored = pd.DataFrame(X_censored, columns=columns.drop(["time", "event"]))

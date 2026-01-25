@@ -1,1 +1,0 @@
-# BatchBALD for Survival Analysis
