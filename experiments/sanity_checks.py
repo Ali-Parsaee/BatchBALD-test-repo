@@ -1,13 +1,14 @@
 """
 Sanity Checks for Survival Active Learning on NACD Dataset
 
-This script performs three essential sanity checks:
-1. Does the model (BayesMtlr) learn well on NACD data?
-2. Does having more labeled data help the model?
-3. What types of points are most valuable for learning?
-
-NO artificial censoring, NO specific acquisition functions.
-Just basic validation that the components work.
+Replicates the working training approach from Model_stuff folder.
+Key differences from previous version:
+1. Uses BayesLinMtlr (linear model)
+2. Uses RobustScaler
+3. Creates time bins from event times only
+4. Uses validation split with early stopping
+5. Lower learning rate (8e-5)
+6. More epochs with early stopping
 """
 
 import sys
@@ -17,165 +18,263 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import numpy as np
 import pandas as pd
 import torch
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
+import torch.nn as nn
+from sklearn.preprocessing import RobustScaler
+from sklearn.model_selection import train_test_split, StratifiedKFold
+from torch.utils.data import DataLoader, TensorDataset
 from datetime import datetime
+from tqdm import tqdm
 
-from model import BayesMtlr
+# Import from the root model.py (not Model_stuff)
+from model import BayesLinMtlr, mtlr_nll
 
 
-# ============ Data Loading ============
+# ============ Data Loading (matching Model_stuff/data.py) ============
 
 def load_nacd_data():
-    """Load NACD dataset."""
+    """Load NACD dataset matching Model_stuff approach."""
     data_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'MIMIC', 'NACD', 'NACD_Full.csv')
     data = pd.read_csv(data_path)
-    data = data.rename(columns={'SURVIVAL': 'time', 'CENSORED': 'event'})
 
-    # Handle missing values
-    for col in data.columns:
-        if col not in ['time', 'event']:
-            data[col] = data[col].replace(-1, 0)
-            data[col] = data[col].fillna(0)
+    # Drop certain columns
+    cols_to_drop = ['PERFORMANCE_STATUS', 'STAGE_NUMERICAL', 'AGE65']
+    data = data.drop([c for c in cols_to_drop if c in data.columns], axis=1)
 
-    # Standardize features
-    feature_cols = [c for c in data.columns if c not in ['time', 'event']]
-    scaler = StandardScaler()
-    data[feature_cols] = scaler.fit_transform(data[feature_cols])
+    # CENSORED=1 means censored (no death) -> event=0
+    # CENSORED=0 means died -> event=1
+    if "CENSORED" in data.columns:
+        data["event"] = 1 - data["CENSORED"]
+        data = data.drop(columns=["CENSORED"])
+    if "SURVIVAL" in data.columns:
+        data = data.rename(columns={"SURVIVAL": "time"})
+
+    # Standardize specific columns
+    cols_standardize = ['BOX1_SCORE', 'BOX2_SCORE', 'BOX3_SCORE', 'BMI', 'WEIGHT_CHANGEPOINT',
+                        'AGE', 'GRANULOCYTES', 'LDH_SERUM', 'LYMPHOCYTES',
+                        'PLATELET', 'WBC_COUNT', 'CALCIUM_SERUM', 'HGB', 'CREATININE_SERUM', 'ALBUMIN']
+    cols_standardize = [c for c in cols_standardize if c in data.columns]
+    data[cols_standardize] = data[cols_standardize].apply(lambda x: (x - x.mean()) / x.std())
 
     return data.astype(float)
 
 
-# ============ Model Config ============
+# ============ Model Config (matching Model_stuff/main.py) ============
 
 class ModelConfig:
-    """Configuration for BayesMtlr."""
+    """Configuration matching Model_stuff."""
     def __init__(self):
-        self.lr = 0.001
-        self.weight_decay = 0.001
-        self.dropout = 0.2
-        self.device = 'cpu'
+        self.lr = 8e-5  # Lower learning rate
+        self.learning_rate = 8e-5
         self.batch_size = 32
-        self.n_samples_train = 5
-        self.hidden_size = 64
-        self.rho_scale = -5.0
-        self.mu_scale = None
-        self.sigma_1 = 1.0
-        self.sigma_2 = 0.0025
+        self.dropout = 0.2
+        self.dropout_rate = 0.2
+        self.l2_penalty = 1e-4
+        self.weight_decay = 1e-4
+        self.hidden_size = 50
+        self.num_time_bins = 10
+        self.pi = 0.5
+        self.sigma1 = 1.0
+        self.sigma2 = 0.0025
+        self.rho_scale = -3.0  # Different from before
+        self.mu_scale = 0.1
+        self.c1 = 0.01
+        self.n_samples_train = 10
+        self.device = 'cpu'
 
 
-# ============ Helper Functions ============
+# ============ Helper Functions (matching Model_stuff) ============
 
-def make_time_bins(times, num_bins=10):
-    """Create time bins from survival times."""
-    valid_times = times[times > 0]
-    if len(valid_times) == 0:
-        return np.linspace(0, 1, num_bins + 1)[1:]
-    bins = np.quantile(valid_times, np.linspace(0, 1, num_bins + 1))
-    bins = np.unique(bins)
-    return bins[1:]  # Return bin edges (excluding 0)
+def encode_survival(time, event, bins):
+    """Encodes survival time and event indicator for MTLR training."""
+    if isinstance(time, (float, int, np.ndarray)):
+        time = np.atleast_1d(time)
+        time = torch.tensor(time, dtype=torch.float32)
+    if isinstance(event, (int, bool, np.ndarray)):
+        event = np.atleast_1d(event)
+        event = torch.tensor(event)
+    if isinstance(bins, np.ndarray):
+        bins = torch.tensor(bins, dtype=torch.float32)
 
+    time = torch.clamp(time, 0, bins.max())
+    y = torch.zeros((time.shape[0], bins.shape[0] + 1), dtype=torch.float)
+    bin_idxs = torch.bucketize(time, bins, right=True)
 
-def discretize_times(times, bins):
-    """Convert continuous times to bin indices."""
-    return np.searchsorted(bins, times)
-
-
-def encode_survival_mtlr(time_bins, event, num_bins):
-    """
-    Encode survival data for MTLR.
-    For uncensored: one-hot at death time
-    For censored: 1s from censoring time onwards
-    """
-    n = len(time_bins)
-    y = np.zeros((n, num_bins))
-
-    for i in range(n):
-        bin_idx = min(int(time_bins[i]), num_bins - 1)
-        if event[i] == 1:  # Death observed
+    for i, (bin_idx, e) in enumerate(zip(bin_idxs, event)):
+        if e == 1:
             y[i, bin_idx] = 1
-        else:  # Censored
+        else:
             y[i, bin_idx:] = 1
-
     return y
 
 
-def compute_c_index(risk_scores, time, event):
+def reformat_survival(X, time, event, bins):
+    """Reformat survival data for training."""
+    x = torch.tensor(X, dtype=torch.float32)
+    y = encode_survival(time, event, bins)
+    return x, y
+
+
+def make_time_bins(times, events, num_bins=10):
+    """Create time bins from event times only (matching Model_stuff)."""
+    event_times = times[events == 1]
+    quantiles = np.linspace(0, 1, num_bins + 1)[1:]
+    bins = np.quantile(event_times, quantiles)
+    bins[-1] *= 1.05  # Extend last bin slightly
+    bins = np.array([0] + list(bins))
+    return bins
+
+
+def train_model_with_validation(model, X_train, time_train, event_train, time_bins, config,
+                                 num_epochs=200, patience=20, verbose=False):
+    """
+    Train model with validation split and early stopping (matching Model_stuff).
+    """
+    torch.manual_seed(42)
+    np.random.seed(42)
+    model.reset_parameters()
+
+    device = torch.device(config.device)
+
+    # Create train/val split
+    try:
+        train_indices, val_indices = next(
+            StratifiedKFold(n_splits=10, shuffle=True, random_state=42).split(X_train, event_train)
+        )
+    except:
+        indices = np.random.permutation(len(X_train))
+        train_size = int(0.9 * len(X_train))
+        train_indices = indices[:train_size]
+        val_indices = indices[train_size:]
+
+    X_tr, time_tr, event_tr = X_train[train_indices], time_train[train_indices], event_train[train_indices]
+    X_val, time_val, event_val = X_train[val_indices], time_train[val_indices], event_train[val_indices]
+
+    # Use time_bins[1:] because encode_survival creates bins.shape[0] + 1 outputs
+    x_train_tensor, y_train_tensor = reformat_survival(X_tr, time_tr, event_tr, time_bins[1:])
+    x_val_tensor, y_val_tensor = reformat_survival(X_val, time_val, event_val, time_bins[1:])
+
+    train_dataset = TensorDataset(x_train_tensor, y_train_tensor)
+    train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
+
+    best_val_loss = float('inf')
+    best_epoch = 0
+    best_state = None
+
+    pbar = tqdm(range(num_epochs), desc="Training", disable=not verbose)
+    for epoch in pbar:
+        model.train()
+        total_loss = 0
+
+        for xi, yi in train_loader:
+            xi, yi = xi.to(device), yi.to(device)
+            optimizer.zero_grad()
+            loss, _, _, _ = model.sample_elbo(xi, yi, len(train_indices), see1=config.c1)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+
+        # Validation
+        model.eval()
+        with torch.no_grad():
+            val_loss, _, _, _ = model.sample_elbo(x_val_tensor, y_val_tensor, len(val_indices), see1=config.c1)
+            val_loss = val_loss.item() / len(val_indices)
+
+        pbar.set_postfix({"Train": f"{total_loss/len(train_loader):.4f}", "Val": f"{val_loss:.4f}"})
+
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            best_epoch = epoch
+            best_state = {k: v.clone() for k, v in model.state_dict().items()}
+        elif epoch - best_epoch > patience:
+            if verbose:
+                print(f"Early stopping at epoch {epoch+1}")
+            break
+
+    if best_state:
+        model.load_state_dict(best_state)
+
+    return model
+
+
+def expected_times_from_survival(surv_np, time_bins):
+    """Convert survival probabilities to expected survival times."""
+    if isinstance(time_bins, torch.Tensor):
+        tb = time_bins.cpu().numpy()
+    else:
+        tb = np.array(time_bins)
+
+    left_edges = np.concatenate([[0.0], tb[:-1]])
+    right_edges = tb
+    mids = (left_edges + right_edges) / 2.0
+
+    # PDF from survival function
+    pdf = np.zeros_like(surv_np)
+    pdf[:, 0] = 1.0 - surv_np[:, 0]
+    pdf[:, 1:] = surv_np[:, :-1] - surv_np[:, 1:]
+    pdf = np.clip(pdf, 0.0, 1.0)
+    pdf = pdf / (pdf.sum(axis=1, keepdims=True) + 1e-12)
+
+    return (pdf * mids.reshape(1, -1)).sum(axis=1)
+
+
+def compute_c_index(pred_times, true_times, events):
     """
     Compute concordance index.
-    Higher risk score should correspond to earlier death.
+    Higher predicted time should correspond to later actual death.
     """
-    n = len(time)
+    n = len(true_times)
     concordant = 0
     total = 0
 
     for i in range(n):
-        if event[i] == 0:  # Only count pairs where i has observed event
+        if events[i] == 0:  # Only count pairs where i has observed event
             continue
         for j in range(n):
-            if time[j] > time[i]:  # j survived longer than i
+            if true_times[j] > true_times[i]:  # j survived longer than i
                 total += 1
-                if risk_scores[i] > risk_scores[j]:  # Correct ordering
+                # Person i died earlier, should have lower predicted time
+                if pred_times[i] < pred_times[j]:
                     concordant += 1
-                elif risk_scores[i] == risk_scores[j]:
+                elif pred_times[i] == pred_times[j]:
                     concordant += 0.5
 
     return concordant / total if total > 0 else 0.5
 
 
-def train_model(X, y, config, epochs=100, verbose=False):
-    """Train BayesMtlr model."""
-    num_bins = y.shape[1]
-    model = BayesMtlr(in_features=X.shape[1], num_time_bins=num_bins, config=config)
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
-
-    X_tensor = torch.FloatTensor(X)
-    y_tensor = torch.FloatTensor(y)
-    dataset_size = len(X)
-
-    model.train()
-    for epoch in range(epochs):
-        optimizer.zero_grad()
-        loss, _, _, nll = model.sample_elbo(X_tensor, y_tensor, dataset_size, see1=0.01)
-        loss.backward()
-        optimizer.step()
-
-        if verbose and (epoch + 1) % 20 == 0:
-            print(f"  Epoch {epoch+1}: loss={loss.item():.4f}, nll={nll.item():.4f}")
-
-    return model
-
-
-def evaluate_model(model, X, time_bins, event):
-    """Evaluate model using C-index."""
+def evaluate_model(model, X_test, time_test, event_test, time_bins, config):
+    """Evaluate model and return C-index."""
     model.eval()
+    device = torch.device(config.device)
+
     with torch.no_grad():
-        # Get predictions (mean over samples)
-        preds = model(torch.FloatTensor(X), sample=True, n_samples=10)
-        preds = torch.softmax(preds.mean(0), dim=1).numpy()
+        X_tensor = torch.FloatTensor(X_test).to(device)
+        outputs = model(X_tensor, sample=True, n_samples=20)
+        # outputs shape: (n_samples, batch, num_bins)
+        # Apply softmax and average over samples
+        survival_probs = torch.softmax(outputs, dim=-1).mean(dim=0).cpu().numpy()
 
-    # Risk score = negative expected survival time
-    expected_time = np.sum(preds * np.arange(preds.shape[1]), axis=1)
-    risk_scores = -expected_time  # Higher risk = lower expected time
+    # Get expected survival times
+    pred_times = expected_times_from_survival(survival_probs, time_bins)
 
-    c_index = compute_c_index(risk_scores, time_bins, event)
-    return c_index
+    # C-index
+    c_index = compute_c_index(pred_times, time_test, event_test)
+
+    return c_index, pred_times
 
 
 # ============ Sanity Check 1: Does the model learn? ============
 
 def sanity_check_1_model_learns(data, n_runs=5):
-    """
-    Test if BayesMtlr actually learns on NACD data.
-    Compare trained model vs random predictions.
-    """
+    """Test if model actually learns on NACD data."""
     print("\n" + "="*80)
     print("SANITY CHECK 1: Does the model learn on NACD?")
     print("="*80)
 
     feature_cols = [c for c in data.columns if c not in ['time', 'event']]
     X = data[feature_cols].values.astype(np.float32)
-    time = data['time'].values
+    time = data['time'].values.astype(np.float32)
     event = data['event'].values.astype(int)
 
     print(f"\nDataset: {len(X)} samples, {len(feature_cols)} features")
@@ -188,33 +287,37 @@ def sanity_check_1_model_learns(data, n_runs=5):
         np.random.seed(42 + run)
         torch.manual_seed(42 + run)
 
-        # Split data
+        # Stratified split
         X_train, X_test, time_train, time_test, event_train, event_test = train_test_split(
             X, time, event, test_size=0.3, random_state=42 + run, stratify=event
         )
 
-        # Create time bins from training data
-        bins = make_time_bins(time_train, num_bins=10)
-        num_bins = len(bins)
+        # Apply RobustScaler (matching Model_stuff)
+        scaler = RobustScaler()
+        X_train = scaler.fit_transform(X_train)
+        X_test = scaler.transform(X_test)
 
-        # Discretize
-        time_train_bins = discretize_times(time_train, bins)
-        time_test_bins = discretize_times(time_test, bins)
+        # Create time bins from training event times
+        time_bins = make_time_bins(time_train, event_train, num_bins=10)
+        num_bins = len(time_bins) - 1  # Exclude leading 0
 
-        # Encode for MTLR
-        y_train = encode_survival_mtlr(time_train_bins, event_train, num_bins)
-
-        # Train model
+        # Create model
         config = ModelConfig()
-        model = train_model(X_train, y_train, config, epochs=100, verbose=(run == 0))
+        model = BayesLinMtlr(X_train.shape[1], num_bins, config)
+
+        # Train with validation and early stopping
+        model = train_model_with_validation(
+            model, X_train, time_train, event_train, time_bins, config,
+            num_epochs=200, patience=20, verbose=(run == 0)
+        )
 
         # Evaluate
-        c_index = evaluate_model(model, X_test, time_test_bins, event_test)
+        c_index, _ = evaluate_model(model, X_test, time_test, event_test, time_bins, config)
         trained_c_indices.append(c_index)
 
         # Random baseline
-        random_risks = np.random.rand(len(X_test))
-        random_c = compute_c_index(random_risks, time_test_bins, event_test)
+        random_pred = np.random.rand(len(X_test))
+        random_c = compute_c_index(random_pred, time_test, event_test)
         random_c_indices.append(random_c)
 
         print(f"  Run {run+1}: Trained C-index={c_index:.4f}, Random={random_c:.4f}")
@@ -227,8 +330,11 @@ def sanity_check_1_model_learns(data, n_runs=5):
     print(f"  Random baseline: {mean_random:.4f} ± {np.std(random_c_indices):.4f}")
     print(f"  Improvement: {mean_trained - mean_random:+.4f}")
 
-    if mean_trained > 0.55:
-        print("\n✓ PASS: Model learns (C-index > 0.55)")
+    if mean_trained > 0.60:
+        print("\n✓ PASS: Model learns well (C-index > 0.60)")
+        return True
+    elif mean_trained > 0.55:
+        print("\n~ PARTIAL: Model learns somewhat (C-index > 0.55)")
         return True
     else:
         print("\n✗ FAIL: Model doesn't learn well (C-index ≤ 0.55)")
@@ -238,17 +344,14 @@ def sanity_check_1_model_learns(data, n_runs=5):
 # ============ Sanity Check 2: Does more data help? ============
 
 def sanity_check_2_more_data_helps(data, n_runs=5):
-    """
-    Test if having more training data improves the model.
-    Train on 20%, 40%, 60%, 80% of data and compare C-index.
-    """
+    """Test if having more training data improves the model."""
     print("\n" + "="*80)
     print("SANITY CHECK 2: Does more data help the model?")
     print("="*80)
 
     feature_cols = [c for c in data.columns if c not in ['time', 'event']]
     X = data[feature_cols].values.astype(np.float32)
-    time = data['time'].values
+    time = data['time'].values.astype(np.float32)
     event = data['event'].values.astype(int)
 
     train_fractions = [0.2, 0.4, 0.6, 0.8]
@@ -263,13 +366,8 @@ def sanity_check_2_more_data_helps(data, n_runs=5):
             X, time, event, test_size=0.2, random_state=42 + run, stratify=event
         )
 
-        # Create bins from all non-test data
-        bins = make_time_bins(time_rest, num_bins=10)
-        num_bins = len(bins)
-        time_test_bins = discretize_times(time_test, bins)
-
         for frac in train_fractions:
-            # Use fraction of remaining data for training
+            # Use fraction of remaining data
             n_train = int(len(X_rest) * frac)
             indices = np.random.choice(len(X_rest), n_train, replace=False)
 
@@ -277,15 +375,25 @@ def sanity_check_2_more_data_helps(data, n_runs=5):
             time_train = time_rest[indices]
             event_train = event_rest[indices]
 
-            time_train_bins = discretize_times(time_train, bins)
-            y_train = encode_survival_mtlr(time_train_bins, event_train, num_bins)
+            # Scale
+            scaler = RobustScaler()
+            X_train_scaled = scaler.fit_transform(X_train)
+            X_test_scaled = scaler.transform(X_test)
+
+            # Time bins
+            time_bins = make_time_bins(time_train, event_train, num_bins=10)
+            num_bins = len(time_bins) - 1
 
             # Train
             config = ModelConfig()
-            model = train_model(X_train, y_train, config, epochs=100)
+            model = BayesLinMtlr(X_train.shape[1], num_bins, config)
+            model = train_model_with_validation(
+                model, X_train_scaled, time_train, event_train, time_bins, config,
+                num_epochs=200, patience=20, verbose=False
+            )
 
             # Evaluate
-            c_index = evaluate_model(model, X_test, time_test_bins, event_test)
+            c_index, _ = evaluate_model(model, X_test_scaled, time_test, event_test, time_bins, config)
             results[frac].append(c_index)
 
         print(f"  Run {run+1}: ", end="")
@@ -299,37 +407,26 @@ def sanity_check_2_more_data_helps(data, n_runs=5):
         std_c = np.std(results[frac])
         print(f"  {int(frac*100)}% data: {mean_c:.4f} ± {std_c:.4f}")
 
-    # Check if trend is increasing
     means = [np.mean(results[f]) for f in train_fractions]
-    if means[-1] > means[0]:
+    if means[-1] > means[0] + 0.01:
         print(f"\n✓ PASS: More data helps (80% > 20%: {means[-1]:.4f} > {means[0]:.4f})")
         return True
     else:
-        print(f"\n✗ FAIL: More data doesn't help (80% ≤ 20%)")
+        print(f"\n✗ FAIL: More data doesn't help clearly")
         return False
 
 
 # ============ Sanity Check 3: Which points are most valuable? ============
 
 def sanity_check_3_valuable_points(data, n_runs=5):
-    """
-    Test which types of points are most valuable for learning.
-
-    Start with a small training set, then add different types of points:
-    - Uncensored (deaths observed)
-    - Early censored (censored early)
-    - Late censored (censored late)
-    - Random mix
-
-    See which additions improve C-index most.
-    """
+    """Test which types of points are most valuable for learning."""
     print("\n" + "="*80)
     print("SANITY CHECK 3: Which point types are most valuable?")
     print("="*80)
 
     feature_cols = [c for c in data.columns if c not in ['time', 'event']]
     X = data[feature_cols].values.astype(np.float32)
-    time = data['time'].values
+    time = data['time'].values.astype(np.float32)
     event = data['event'].values.astype(int)
 
     results = {
@@ -358,25 +455,31 @@ def sanity_check_3_valuable_points(data, n_runs=5):
         time_pool = time[pool_idx]
         event_pool = event[pool_idx]
 
-        # Create bins
-        bins = make_time_bins(time_pool, num_bins=10)
-        num_bins = len(bins)
-        time_test_bins = discretize_times(time_test, bins)
-        time_pool_bins = discretize_times(time_pool, bins)
-
-        # Start with small baseline (20% of pool = 16% of total)
+        # Baseline: 20% of pool
         n_baseline = int(0.2 * len(pool_idx))
         baseline_idx = np.random.choice(len(pool_idx), n_baseline, replace=False)
 
         X_base = X_pool[baseline_idx]
-        time_base_bins = time_pool_bins[baseline_idx]
+        time_base = time_pool[baseline_idx]
         event_base = event_pool[baseline_idx]
-        y_base = encode_survival_mtlr(time_base_bins, event_base, num_bins)
+
+        # Scale
+        scaler = RobustScaler()
+        X_base_scaled = scaler.fit_transform(X_base)
+        X_test_scaled = scaler.transform(X_test)
+
+        # Time bins
+        time_bins = make_time_bins(time_base, event_base, num_bins=10)
+        num_bins = len(time_bins) - 1
 
         # Train baseline
         config = ModelConfig()
-        model_base = train_model(X_base, y_base, config, epochs=100)
-        c_base = evaluate_model(model_base, X_test, time_test_bins, event_test)
+        model_base = BayesLinMtlr(X_base.shape[1], num_bins, config)
+        model_base = train_model_with_validation(
+            model_base, X_base_scaled, time_base, event_base, time_bins, config,
+            num_epochs=200, patience=20, verbose=False
+        )
+        c_base, _ = evaluate_model(model_base, X_test_scaled, time_test, event_test, time_bins, config)
         results['baseline'].append(c_base)
 
         # Remaining pool
@@ -384,18 +487,17 @@ def sanity_check_3_valuable_points(data, n_runs=5):
         remaining_mask[baseline_idx] = False
         remaining_idx = np.where(remaining_mask)[0]
 
-        n_add = int(0.2 * len(pool_idx))  # Add 20% more
+        n_add = int(0.2 * len(pool_idx))
 
         # Categorize remaining points
         uncensored_idx = remaining_idx[event_pool[remaining_idx] == 1]
         censored_idx = remaining_idx[event_pool[remaining_idx] == 0]
 
-        # Split censored by time
         if len(censored_idx) > 0:
-            censored_times = time_pool_bins[censored_idx]
-            median_censor_time = np.median(censored_times)
-            early_censored_idx = censored_idx[censored_times <= median_censor_time]
-            late_censored_idx = censored_idx[censored_times > median_censor_time]
+            censored_times = time_pool[censored_idx]
+            median_time = np.median(censored_times)
+            early_censored_idx = censored_idx[censored_times <= median_time]
+            late_censored_idx = censored_idx[censored_times > median_time]
         else:
             early_censored_idx = np.array([], dtype=int)
             late_censored_idx = np.array([], dtype=int)
@@ -408,7 +510,6 @@ def sanity_check_3_valuable_points(data, n_runs=5):
             ('add_random', remaining_idx)
         ]:
             if len(available_idx) < n_add:
-                # Not enough points, use what's available
                 add_idx = available_idx
             else:
                 add_idx = np.random.choice(available_idx, n_add, replace=False)
@@ -418,21 +519,33 @@ def sanity_check_3_valuable_points(data, n_runs=5):
                 continue
 
             # Combine with baseline
-            combined_idx = np.concatenate([baseline_idx, add_idx])
-            X_train = X_pool[combined_idx]
-            time_train_bins = time_pool_bins[combined_idx]
-            event_train = event_pool[combined_idx]
-            y_train = encode_survival_mtlr(time_train_bins, event_train, num_bins)
+            combined_pool_idx = np.concatenate([baseline_idx, add_idx])
+            X_train = X_pool[combined_pool_idx]
+            time_train = time_pool[combined_pool_idx]
+            event_train = event_pool[combined_pool_idx]
+
+            # Scale (refit on combined)
+            scaler_new = RobustScaler()
+            X_train_scaled = scaler_new.fit_transform(X_train)
+            X_test_scaled_new = scaler_new.transform(X_test)
+
+            # Time bins (recompute)
+            time_bins_new = make_time_bins(time_train, event_train, num_bins=10)
+            num_bins_new = len(time_bins_new) - 1
 
             # Train
-            torch.manual_seed(42 + run)  # Same init for fair comparison
-            model = train_model(X_train, y_train, config, epochs=100)
-            c_index = evaluate_model(model, X_test, time_test_bins, event_test)
+            torch.manual_seed(42 + run)
+            model = BayesLinMtlr(X_train.shape[1], num_bins_new, config)
+            model = train_model_with_validation(
+                model, X_train_scaled, time_train, event_train, time_bins_new, config,
+                num_epochs=200, patience=20, verbose=False
+            )
+            c_index, _ = evaluate_model(model, X_test_scaled_new, time_test, event_test, time_bins_new, config)
             results[point_type].append(c_index)
 
         print(f"  Run {run+1}: base={c_base:.3f}, +uncens={results['add_uncensored'][-1]:.3f}, "
-              f"+early_cens={results['add_early_censored'][-1]:.3f}, +late_cens={results['add_late_censored'][-1]:.3f}, "
-              f"+random={results['add_random'][-1]:.3f}")
+              f"+early={results['add_early_censored'][-1]:.3f}, +late={results['add_late_censored'][-1]:.3f}, "
+              f"+rand={results['add_random'][-1]:.3f}")
 
     print(f"\nSummary (mean C-index, improvement over baseline):")
     baseline_mean = np.mean(results['baseline'])
@@ -445,7 +558,6 @@ def sanity_check_3_valuable_points(data, n_runs=5):
         improvements[point_type] = improvement
         print(f"  {point_type}: {mean_c:.4f} ({improvement:+.4f})")
 
-    # Find best
     best_type = max(improvements, key=improvements.get)
     print(f"\n✓ Most valuable: {best_type} ({improvements[best_type]:+.4f})")
 
@@ -457,6 +569,7 @@ def sanity_check_3_valuable_points(data, n_runs=5):
 def main():
     print("\n" + "="*100)
     print("SANITY CHECKS FOR SURVIVAL ACTIVE LEARNING ON NACD")
+    print("(Using Model_stuff training approach)")
     print("="*100)
     print(f"Started: {datetime.now()}")
 
@@ -464,6 +577,7 @@ def main():
     print("\nLoading NACD dataset...")
     data = load_nacd_data()
     print(f"Loaded: {data.shape[0]} samples, {data.shape[1]-2} features")
+    print(f"Events: {int(data['event'].sum())} deaths ({100*data['event'].mean():.1f}%)")
 
     # Run sanity checks
     check1_passed = sanity_check_1_model_learns(data, n_runs=5)
@@ -479,11 +593,11 @@ def main():
     print(f"3. Most valuable points: {max(improvements, key=improvements.get)}")
 
     if check1_passed and check2_passed:
-        print("\n→ The model and data are working. Problem is likely in the AL setup.")
+        print("\n→ Model and data are working! Ready for AL experiments.")
     elif not check1_passed:
-        print("\n→ The model doesn't learn well. Need to fix model/data first.")
+        print("\n→ Model still doesn't learn well. Check model/data.")
     elif not check2_passed:
-        print("\n→ More data doesn't help. Model may be overfitting or data is noisy.")
+        print("\n→ More data doesn't help. May need regularization.")
 
     print(f"\nCompleted: {datetime.now()}")
 
