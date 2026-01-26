@@ -1,48 +1,39 @@
+"""
+Bayesian Survival Model using Bayesian Linear MTLR.
+This follows the correct implementation from Model_stuff/model.py.
+"""
+
+import sys
+import os
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from typing import Tuple, Optional
 
+# Add Model_stuff to path to import the correct Bayesian MTLR implementation
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'Model_stuff'))
 
-class SurvivalNet(nn.Module):
-    """Single neural network for survival prediction."""
-
-    def __init__(self, n_features: int, n_time_bins: int, hidden_size: int = 64, dropout_rate: float = 0.3):
-        super().__init__()
-        self.dropout_rate = dropout_rate
-        self.network = nn.Sequential(
-            nn.Linear(n_features, hidden_size),
-            nn.ReLU(),
-            nn.Dropout(dropout_rate),
-            nn.Linear(hidden_size, hidden_size),
-            nn.ReLU(),
-            nn.Dropout(dropout_rate),
-            nn.Linear(hidden_size, n_time_bins)
-        )
-
-        # Initialize weights with more variance for diversity
-        self._init_weights()
-
-    def _init_weights(self):
-        """Initialize weights with higher variance for ensemble diversity."""
-        for module in self.modules():
-            if isinstance(module, nn.Linear):
-                # Use larger std for initialization
-                nn.init.xavier_normal_(module.weight, gain=2.0)
-                if module.bias is not None:
-                    nn.init.normal_(module.bias, std=0.1)
-
-    def forward(self, x):
-        return self.network(x)
+try:
+    from model import BayesLinMtlr, mtlr_survival
+    from utils import reformat_survival, encode_survival
+except ImportError:
+    # Fallback: try importing from root
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+    from Model_stuff.model import BayesLinMtlr, mtlr_survival
+    from Model_stuff.utils import reformat_survival, encode_survival
 
 
 class BayesianSurvivalModel:
     """
-    Bayesian survival model using ensemble.
+    Bayesian survival model using Bayesian Linear MTLR.
+
+    This implementation uses the correct Bayesian Linear MTLR approach with:
+    - BayesianLinear layers with scale mixture priors
+    - Proper ELBO loss with KL divergence
+    - Variational inference for uncertainty quantification
 
     Outputs predictions of shape (K, N, T) where:
-    - K: number of ensemble members
+    - K: number of samples from the posterior
     - N: number of instances
     - T: number of time bins
     """
@@ -51,132 +42,156 @@ class BayesianSurvivalModel:
         self,
         n_features: int,
         n_time_bins: int,
-        n_ensemble: int = 10,
-        hidden_size: int = 64,
-        device: str = 'cpu'
+        n_ensemble: int = 10,  # This becomes n_samples in Bayesian setting
+        hidden_size: int = 50,
+        device: str = 'cpu',
+        config: Optional[object] = None
     ):
         self.n_features = n_features
         self.n_time_bins = n_time_bins
-        self.n_ensemble = n_ensemble
+        self.n_samples = n_ensemble  # Number of posterior samples
         self.hidden_size = hidden_size
         self.device = device
 
-        # Create ensemble of models with balanced dropout for diversity
-        self.models = [
-            SurvivalNet(n_features, n_time_bins, hidden_size, dropout_rate=0.2).to(device)
-            for _ in range(n_ensemble)
-        ]
+        # Create config if not provided
+        if config is None:
+            import argparse
+            config = argparse.Namespace()
+            config.pi = 0.5
+            config.sigma1 = 1.0
+            config.sigma2 = 0.0025
+            config.rho_scale = -3.0
+            config.mu_scale = 0.1
+            config.batch_size = 32
+            config.c1 = 0.01
+            config.n_samples_train = 10
+            config.n_samples_test = n_ensemble
+            config.device = device
+            config.hidden_size = hidden_size
+
+        self.config = config
+
+        # Create the Bayesian Linear MTLR model
+        # Note: BayesLinMtlr adds +1 internally, so we pass n_time_bins - 1
+        self.model = BayesLinMtlr(
+            in_features=n_features,
+            num_time_bins=n_time_bins - 1,
+            config=config
+        ).to(device)
 
     def fit(
         self,
         X: np.ndarray,
         time: np.ndarray,
         event: np.ndarray,
-        epochs: int = 50,
+        time_bins: Optional[np.ndarray] = None,
+        epochs: int = 100,
         batch_size: int = 32,
-        lr: float = 0.001,
+        lr: float = 8e-5,
+        patience: int = 20,
         verbose: bool = False
     ):
         """
-        Train the ensemble on survival data.
+        Train the Bayesian Linear MTLR model.
 
-        Uses discrete survival loss (negative log-likelihood for discrete hazards).
+        Uses proper Bayesian training with ELBO loss (Evidence Lower Bound).
         """
+        import pandas as pd
+        from torch.utils.data import DataLoader, TensorDataset
+        from sklearn.model_selection import train_test_split
+
+        # Prepare data
         X_tensor = torch.FloatTensor(X).to(self.device)
-        time_tensor = torch.LongTensor(time).to(self.device)
-        event_tensor = torch.FloatTensor(event).to(self.device)
+        y_tensor = torch.FloatTensor(time).to(self.device)
+        e_tensor = torch.FloatTensor(event).to(self.device)
 
-        n_samples = len(X)
+        # Create time bins if not provided
+        if time_bins is None:
+            event_times = time[event == 1]
+            if len(event_times) > 0:
+                quantiles = np.linspace(0, 1, self.n_time_bins + 1)[1:]
+                time_bins = np.quantile(event_times, quantiles)
+                time_bins[-1] *= 1.05
+                time_bins = np.array([0] + list(time_bins))
+            else:
+                time_bins = np.linspace(0, time.max(), self.n_time_bins + 1)
 
-        for k, model in enumerate(self.models):
-            # Use light L2 regularization for diversity
-            optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=0.001)
+        # Convert to proper format
+        train_indices, val_indices = train_test_split(
+            np.arange(len(X)), test_size=0.1, random_state=42, stratify=event
+        )
 
-            # Bootstrap sample for this ensemble member (with replacement)
-            # This increases diversity by training on different data subsets
-            bootstrap_indices = np.random.choice(n_samples, size=n_samples, replace=True)
-            X_bootstrap = X_tensor[bootstrap_indices]
-            time_bootstrap = time_tensor[bootstrap_indices]
-            event_bootstrap = event_tensor[bootstrap_indices]
+        x_train, y_train, e_train = X_tensor[train_indices], y_tensor[train_indices], e_tensor[train_indices]
+        x_val, y_val, e_val = X_tensor[val_indices], y_tensor[val_indices], e_tensor[val_indices]
 
-            for epoch in range(epochs):
-                model.train()
-                total_loss = 0.0
+        # Format for MTLR training
+        train_df = pd.DataFrame(x_train.cpu().numpy())
+        train_df['time'] = y_train.cpu().numpy()
+        train_df['event'] = e_train.cpu().numpy()
+        x_formatted, y_formatted = reformat_survival(train_df, time_bins[1:])
 
-                # Mini-batch training on bootstrapped data
-                indices = np.random.permutation(n_samples)
-                for i in range(0, n_samples, batch_size):
-                    batch_idx = indices[i:i + batch_size]
+        val_df = pd.DataFrame(x_val.cpu().numpy())
+        val_df['time'] = y_val.cpu().numpy()
+        val_df['event'] = e_val.cpu().numpy()
+        x_val_formatted, y_val_formatted = reformat_survival(val_df, time_bins[1:])
 
-                    X_batch = X_bootstrap[batch_idx]
-                    time_batch = time_bootstrap[batch_idx]
-                    event_batch = event_bootstrap[batch_idx]
+        # Create data loader
+        train_dataset = TensorDataset(x_formatted, y_formatted)
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
-                    optimizer.zero_grad()
-                    logits = model(X_batch)  # (batch_size, n_time_bins)
+        # Optimizer
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
-                    # Survival loss
-                    loss = self._survival_loss(logits, time_batch, event_batch)
-                    loss.backward()
-                    optimizer.step()
+        # Training loop with early stopping
+        best_val_loss = float('inf')
+        best_epoch = 0
+        best_state = None
 
-                    total_loss += loss.item()
+        for epoch in range(epochs):
+            self.model.train()
+            total_loss = 0.0
 
-                if verbose and (epoch + 1) % 10 == 0:
-                    print(f"Model {k+1}/{self.n_ensemble}, Epoch {epoch+1}/{epochs}, Loss: {total_loss:.4f}")
+            for xi, yi in train_loader:
+                xi, yi = xi.to(self.device), yi.to(self.device)
+                optimizer.zero_grad()
 
-    def _survival_loss(
-        self,
-        logits: torch.Tensor,
-        time: torch.Tensor,
-        event: torch.Tensor
-    ) -> torch.Tensor:
-        """
-        Discrete survival loss (negative log-likelihood).
+                # Use ELBO loss
+                loss, _, _, _ = self.model.sample_elbo(
+                    xi, yi, len(train_indices), see1=self.config.c1
+                )
 
-        For each sample:
-        - If event=1 (death at time t): log P(T=t) = log h_t + log S_{t-1}
-        - If event=0 (censored at time t): log P(T>t) = log S_t
+                loss.backward()
+                optimizer.step()
+                total_loss += loss.item()
 
-        where h_t is hazard at time t, S_t is survival function at time t.
-        """
-        # Get probabilities for each time bin
-        probs = torch.softmax(logits, dim=1)  # (batch_size, n_time_bins)
+            # Validation
+            self.model.eval()
+            with torch.no_grad():
+                val_loss, _, _, _ = self.model.sample_elbo(
+                    x_val_formatted, y_val_formatted,
+                    dataset_size=len(val_indices), see1=self.config.c1
+                )
+                val_loss = val_loss.item() / len(val_indices)
 
-        batch_size = logits.size(0)
-        loss = 0.0
+            if verbose and (epoch + 1) % 10 == 0:
+                print(f"Epoch {epoch+1}/{epochs}, Train Loss: {total_loss/len(train_loader):.4f}, Val Loss: {val_loss:.4f}")
 
-        for i in range(batch_size):
-            t = time[i].item()
-            e = event[i].item()
+            # Early stopping
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                best_epoch = epoch
+                best_state = self.model.state_dict().copy()
+            elif epoch - best_epoch > patience:
+                if verbose:
+                    print(f"Early stopping at epoch {epoch+1}")
+                break
 
-            # Survival function: S(t) = prod(1 - h_j) for j <= t
-            # Approximate with cumulative sum for numerical stability
-            cum_hazard = torch.cumsum(probs[i], dim=0)
-            survival = 1.0 - cum_hazard
+        # Load best model
+        if best_state is not None:
+            self.model.load_state_dict(best_state)
 
-            if e == 1:  # Death event
-                # P(T=t) = h_t * S_{t-1}
-                hazard_t = probs[i, t]
-                if t > 0:
-                    survival_t_minus_1 = survival[t - 1]
-                else:
-                    survival_t_minus_1 = torch.tensor(1.0).to(self.device)
-
-                prob = hazard_t * survival_t_minus_1
-                prob = torch.clamp(prob, min=1e-8, max=1.0)
-                loss -= torch.log(prob)
-            else:  # Censored
-                # P(T > t)
-                if t < self.n_time_bins:
-                    survival_t = survival[t]
-                else:
-                    survival_t = survival[-1]
-
-                survival_t = torch.clamp(survival_t, min=1e-8, max=1.0)
-                loss -= torch.log(survival_t)
-
-        return loss / batch_size
+        # Store time bins for later use
+        self.time_bins = time_bins
 
     def predict_proba(
         self,
@@ -185,38 +200,31 @@ class BayesianSurvivalModel:
         mc_dropout: bool = False
     ) -> np.ndarray:
         """
-        Predict survival probabilities.
+        Predict survival probabilities using Bayesian inference.
 
         Args:
             X: Input features
             return_logits: Whether to return logits instead of probabilities
-            mc_dropout: If True, keep dropout enabled during inference (MC Dropout)
+            mc_dropout: Ignored (kept for interface compatibility)
 
         Returns:
-            predictions: (K, N, T) array of probabilities (or logits if return_logits=True)
+            predictions: (K, N, T) array of survival probabilities
         """
         X_tensor = torch.FloatTensor(X).to(self.device)
-        n_samples = len(X)
 
-        predictions = np.zeros((self.n_ensemble, n_samples, self.n_time_bins))
+        self.model.eval()
+        with torch.no_grad():
+            # Get logits from Bayesian model (samples from posterior)
+            logits = self.model.forward(
+                X_tensor, sample=True, n_samples=self.n_samples
+            )  # (K, N, T)
 
-        for k, model in enumerate(self.models):
-            if mc_dropout:
-                # Keep dropout enabled for Monte Carlo Dropout
-                model.train()
+            if return_logits:
+                return logits.cpu().numpy()
             else:
-                model.eval()
-
-            with torch.no_grad():
-                logits = model(X_tensor)  # (N, T)
-
-                if return_logits:
-                    predictions[k] = logits.cpu().numpy()
-                else:
-                    probs = torch.softmax(logits, dim=1)
-                    predictions[k] = probs.cpu().numpy()
-
-        return predictions
+                # Convert to survival probabilities
+                survival = mtlr_survival(logits, with_sample=True)  # (K, N, T)
+                return survival.cpu().numpy()
 
     def predict_survival_function(self, X: np.ndarray) -> np.ndarray:
         """
@@ -225,17 +233,4 @@ class BayesianSurvivalModel:
         Returns:
             survival: (K, N, T) array of survival probabilities
         """
-        probs = self.predict_proba(X)  # (K, N, T)
-
-        # S(t) = product of (1 - h_j) for j <= t
-        # where h_j is the hazard at time j
-        survival = np.zeros_like(probs)
-
-        for k in range(self.n_ensemble):
-            for i in range(len(X)):
-                for t in range(self.n_time_bins):
-                    # Cumulative product
-                    cum_hazard = np.sum(probs[k, i, :t+1])
-                    survival[k, i, t] = 1.0 - cum_hazard
-
-        return np.clip(survival, 0.0, 1.0)
+        return self.predict_proba(X, return_logits=False)
