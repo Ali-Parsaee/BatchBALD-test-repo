@@ -18,15 +18,63 @@ from scipy import stats
 from typing import Dict, List, Tuple
 
 # Import from Model_stuff
-from Model_stuff.data import make_nacd_data
 from Model_stuff.model import BayesLinMtlr, mtlr_survival
-from Model_stuff.utils import reformat_survival, artificially_censor_true
 from Model_stuff.acquisition import (
     batchbald_acquire_budget,
     entropy_of_probs,
     variance_of_probs,
     random_knapsack
 )
+
+
+# Define helper functions inline to avoid dependency issues
+def encode_survival(time, event, bins):
+    """Encodes survival time and event indicator for MTLR training."""
+    if isinstance(time, (float, int, np.ndarray)):
+        time = np.atleast_1d(time)
+        time = torch.tensor(time)
+    if isinstance(event, (int, bool, np.ndarray)):
+        event = np.atleast_1d(event)
+        event = torch.tensor(event)
+    if isinstance(bins, np.ndarray):
+        bins = torch.tensor(bins)
+
+    bins = torch.as_tensor(bins, device=time.device, dtype=time.dtype)
+    device = bins.device if hasattr(bins, 'device') else "cpu"
+    time = np.clip(time, 0, bins.max())
+    y = torch.zeros((time.shape[0], bins.shape[0] + 1), dtype=torch.float, device=device)
+    bin_idxs = torch.bucketize(time, bins, right=True)
+    for i, (bin_idx, e) in enumerate(zip(bin_idxs, event)):
+        if e == 1:
+            y[i, bin_idx] = 1
+        else:
+            y[i, bin_idx:] = 1
+    return y.squeeze()
+
+
+def reformat_survival(dataset, time_bins):
+    """Reformat survival data for training."""
+    x = torch.tensor(dataset.drop(["time", "event"], axis=1).values, dtype=torch.float)
+    y = encode_survival(dataset["time"].values, dataset["event"].values, time_bins)
+    return x, y
+
+
+def artificially_censor_true(times, events, num_initial_samples=50):
+    """Artificially censor data points."""
+    censored_times = np.copy(times)
+    new_events = np.copy(events)
+    uncensored_indices = np.random.choice(len(times), num_initial_samples, replace=False)
+    censored_indices = []
+
+    for i in range(len(times)):
+        if i in uncensored_indices:
+            continue
+        censoring_time = np.random.uniform(0, times[i])
+        censored_times[i] = censoring_time
+        new_events[i] = 0
+        censored_indices.append(i)
+
+    return censored_times, new_events, np.array(censored_indices)
 
 
 def concordance(y_pred, y_test, cens):
@@ -271,7 +319,29 @@ def run_comparison(
 
     # Load data
     print("1. Loading NACD dataset...")
-    data = make_nacd_data()
+    import os
+    nacd_path = "data/MIMIC/NACD/NACD_Full.csv"
+    if not os.path.exists(nacd_path):
+        raise FileNotFoundError(f"NACD file not found at {nacd_path}")
+
+    data = pd.read_csv(nacd_path)
+
+    # Preprocess NACD data
+    cols_to_drop = ['PERFORMANCE_STATUS', 'STAGE_NUMERICAL', 'AGE65']
+    data = data.drop([c for c in cols_to_drop if c in data.columns], axis=1)
+
+    if "CENSORED" in data.columns:
+        data["event"] = 1 - data["CENSORED"]
+        data = data.drop(columns=["CENSORED"])
+    if "SURVIVAL" in data.columns:
+        data = data.rename(columns={"SURVIVAL": "time"})
+
+    cols_standardize = ['BOX1_SCORE', 'BOX2_SCORE', 'BOX3_SCORE', 'BMI', 'WEIGHT_CHANGEPOINT',
+                        'AGE', 'GRANULOCYTES', 'LDH_SERUM', 'LYMPHOCYTES',
+                        'PLATELET', 'WBC_COUNT', 'CALCIUM_SERUM', 'HGB', 'CREATININE_SERUM', 'ALBUMIN']
+    cols_standardize = [c for c in cols_standardize if c in data.columns]
+    data[cols_standardize] = data[cols_standardize].apply(lambda x: (x - x.mean()) / x.std())
+
     print(f"   Dataset shape: {data.shape}")
 
     # Prepare data
