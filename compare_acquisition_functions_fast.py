@@ -13,6 +13,7 @@ Expected runtime: ~30-45 minutes instead of 5+ hours
 import sys
 import os
 sys.path.insert(0, '.')
+sys.path.insert(0, 'Model_stuff')  # For acquisition.py imports
 
 import numpy as np
 import torch
@@ -293,9 +294,9 @@ def run_single_trial(
     try:
         if acq_name == 'Random':
             pool_indices = acquisition_function(costlist, budget)
-        else:
-            # Use SAMPLED joint entropy (much faster than exact)
-            pool_indices, _ = acquisition_function(
+        elif acq_name == 'BatchBALD':
+            # BatchBALD returns just indices (not a tuple)
+            pool_indices = acquisition_function(
                 model=model,
                 X_pool=X_censored,
                 batch_size=budget,
@@ -307,6 +308,21 @@ def run_single_trial(
                 costlist=costlist,
                 budget=budget,
                 num_samples=10000  # Use sampled (not exact!) - 10-50× faster
+            )
+        else:
+            # Entropy and Variance return (indices, scores) tuple
+            # They don't accept num_samples parameter
+            pool_indices, _ = acquisition_function(
+                model=model,
+                X_pool=X_censored,
+                batch_size=budget,
+                time_bins=time_bins,
+                config=config,
+                device=config.device,
+                in_data_train=model_data_censored,
+                increment=increment,
+                costlist=costlist,
+                budget=budget
             )
 
         acquired_indices = [censored_list[i] for i in pool_indices]
