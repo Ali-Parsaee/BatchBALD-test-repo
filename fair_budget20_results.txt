@@ -306,4 +306,27 @@ done (0.1s, acquired 20 samples)
       [Variance] Running acquisition (budget=20)... variance_of_probs score:  [0.00176513 0.00139141 0.00083006 ... 0.00057114 0.00139677 0.00210023]
 sorted_indices:  [1241  657 1128 ...  944 1219 1719]
 done (0.1s, acquired 20 samples)
-      [Variance] Retraining model... 
+      [Variance] Retraining model... done (23.3s)
+      [Variance] Final C-index: 0.6752 (Δ=+0.0119) [Total: 23.4s]
+
+      [Entropy] Starting acquisition...
+      [Entropy] Initial C-index: 0.6633 (verified same as base)
+      [Entropy] Running acquisition (budget=20)... entropy_of_probs score:  [2.5461216  2.4740324  2.1779256  ... 1.2976568  0.9524888  0.77794564]
+sorted_indices:  [1611  903  307 ...  637  630  623]
+done (0.1s, acquired 20 samples)
+      [Entropy] Retraining model... done (24.0s)
+      [Entropy] Final C-index: 0.6476 (Δ=-0.0157) [Total: 24.1s]
+
+      [Random] Starting acquisition...
+      [Random] Initial C-index: 0.6633 (verified same as base)
+      [Random] Running acquisition (budget=20)... done (0.0s, acquired 20 samples)
+      [Random] Retraining model... done (23.3s)
+      [Random] Final C-index: 0.6517 (Δ=-0.0116) [Total: 23.4s]
+
+  Trial 3 completed
+
+  Trial 4/5
+  --------------------------------------------------------------------
+
+      Setting random seed: 103
+      Training SHARED base model for all methods...
