@@ -330,3 +330,235 @@ done (0.1s, acquired 20 samples)
 
       Setting random seed: 103
       Training SHARED base model for all methods...
+      Shared base model trained (24.2s)
+      Shared initial C-index: 0.6825
+      All methods will start from this SAME model!
+
+      [BatchBALD] Starting acquisition...
+      [BatchBALD] Initial C-index: 0.6825 (verified same as base)
+      [BatchBALD] Pre-filtering 1961 → 500 samples... done (0.0s)
+      [BatchBALD] Running acquisition (budget=20)... Conditional Entropy:   0%|          | 0/500 [00:00<?, ?it/s]Conditional Entropy: 100%|██████████| 500/500 [00:00<00:00, 2196.32it/s]                                                                        BatchBALD:   0%|          | 0/20 [00:00<?, ?it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2155.84it/s][A
+                                                                                    [ABatchBALD:   5%|▌         | 1/20 [00:00<00:08,  2.33it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2238.88it/s][A
+                                                                                    [ABatchBALD:  10%|█         | 2/20 [00:00<00:07,  2.30it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 1961.08it/s][A
+                                                                                    [ABatchBALD:  15%|█▌        | 3/20 [00:01<00:07,  2.23it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 1411.28it/s][A
+                                                                                    [ABatchBALD:  20%|██        | 4/20 [00:01<00:07,  2.04it/s]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 419.06it/s][A
+                                                                                     [ABatchBALD:  25%|██▌       | 5/20 [00:03<00:12,  1.19it/s]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 418.11it/s][A
+                                                                                     [ABatchBALD:  30%|███       | 6/20 [00:04<00:14,  1.05s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 444.45it/s][A
+                                                                                     [ABatchBALD:  35%|███▌      | 7/20 [00:06<00:15,  1.16s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 458.94it/s][A
+                                                                                     [ABatchBALD:  40%|████      | 8/20 [00:07<00:14,  1.22s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 447.57it/s][A
+                                                                                     [ABatchBALD:  45%|████▌     | 9/20 [00:08<00:13,  1.26s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 408.06it/s][A
+                                                                                     [ABatchBALD:  50%|█████     | 10/20 [00:10<00:13,  1.34s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 419.61it/s][A
+                                                                                     [ABatchBALD:  55%|█████▌    | 11/20 [00:11<00:12,  1.38s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 437.58it/s][A
+                                                                                     [ABatchBALD:  60%|██████    | 12/20 [00:13<00:11,  1.40s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 433.45it/s][A
+                                                                                     [ABatchBALD:  65%|██████▌   | 13/20 [00:14<00:09,  1.41s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 439.73it/s][A
+                                                                                     [ABatchBALD:  70%|███████   | 14/20 [00:16<00:08,  1.42s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 447.90it/s][A
+                                                                                     [ABatchBALD:  75%|███████▌  | 15/20 [00:17<00:07,  1.42s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 449.64it/s][A
+                                                                                     [ABatchBALD:  80%|████████  | 16/20 [00:19<00:05,  1.42s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 414.54it/s][A
+                                                                                     [ABatchBALD:  85%|████████▌ | 17/20 [00:20<00:04,  1.45s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 423.92it/s][A
+                                                                                     [ABatchBALD:  90%|█████████ | 18/20 [00:22<00:02,  1.46s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 450.95it/s][A
+                                                                                     [ABatchBALD:  95%|█████████▌| 19/20 [00:23<00:01,  1.46s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 439.61it/s][A
+                                                                                     [ABatchBALD: 100%|██████████| 20/20 [00:24<00:00,  1.45s/it]                                                          done (25.4s, acquired 20 samples)
+      [BatchBALD] Retraining model... done (22.8s)
+      [BatchBALD] Final C-index: 0.6982 (Δ=+0.0156) [Total: 48.3s]
+
+      [Variance] Starting acquisition...
+      [Variance] Initial C-index: 0.6825 (verified same as base)
+      [Variance] Running acquisition (budget=20)... variance_of_probs score:  [0.00173732 0.00143541 0.         ... 0.00062095 0.         0.        ]
+sorted_indices:  [1235 1125 1570 ... 1303 1307 1340]
+done (0.1s, acquired 20 samples)
+      [Variance] Retraining model... done (23.2s)
+      [Variance] Final C-index: 0.7001 (Δ=+0.0175) [Total: 23.3s]
+
+      [Entropy] Starting acquisition...
+      [Entropy] Initial C-index: 0.6825 (verified same as base)
+      [Entropy] Running acquisition (budget=20)... entropy_of_probs score:  [2.7261472e+00 2.8752601e+00 3.3219280e-08 ... 1.5356864e+00 3.3219280e-08
+ 3.3219280e-08]
+sorted_indices:  [1463 1617 1606 ... 1303 1307 1340]
+done (0.1s, acquired 20 samples)
+      [Entropy] Retraining model... done (23.3s)
+      [Entropy] Final C-index: 0.6815 (Δ=-0.0011) [Total: 23.4s]
+
+      [Random] Starting acquisition...
+      [Random] Initial C-index: 0.6825 (verified same as base)
+      [Random] Running acquisition (budget=20)... done (0.0s, acquired 20 samples)
+      [Random] Retraining model... done (22.9s)
+      [Random] Final C-index: 0.6829 (Δ=+0.0003) [Total: 23.0s]
+
+  Trial 4 completed
+
+  Trial 5/5
+  --------------------------------------------------------------------
+
+      Setting random seed: 104
+      Training SHARED base model for all methods...
+      Shared base model trained (23.8s)
+      Shared initial C-index: 0.6824
+      All methods will start from this SAME model!
+
+      [BatchBALD] Starting acquisition...
+      [BatchBALD] Initial C-index: 0.6824 (verified same as base)
+      [BatchBALD] Pre-filtering 1961 → 500 samples... done (0.0s)
+      [BatchBALD] Running acquisition (budget=20)... Conditional Entropy:   0%|          | 0/500 [00:00<?, ?it/s]Conditional Entropy: 100%|██████████| 500/500 [00:00<00:00, 2154.51it/s]                                                                        BatchBALD:   0%|          | 0/20 [00:00<?, ?it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2529.28it/s][A
+                                                                                    [ABatchBALD:   5%|▌         | 1/20 [00:00<00:07,  2.68it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2583.15it/s][A
+                                                                                    [ABatchBALD:  10%|█         | 2/20 [00:00<00:06,  2.67it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2178.73it/s][A
+                                                                                    [ABatchBALD:  15%|█▌        | 3/20 [00:01<00:06,  2.46it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 1347.31it/s][A
+                                                                                    [ABatchBALD:  20%|██        | 4/20 [00:01<00:07,  2.08it/s]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 458.97it/s][A
+                                                                                     [ABatchBALD:  25%|██▌       | 5/20 [00:03<00:11,  1.27it/s]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 467.04it/s][A
+                                                                                     [ABatchBALD:  30%|███       | 6/20 [00:04<00:13,  1.03it/s]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 467.05it/s][A
+                                                                                     [ABatchBALD:  35%|███▌      | 7/20 [00:05<00:14,  1.08s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 471.90it/s][A
+                                                                                     [ABatchBALD:  40%|████      | 8/20 [00:07<00:13,  1.15s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 466.65it/s][A
+                                                                                     [ABatchBALD:  45%|████▌     | 9/20 [00:08<00:13,  1.20s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 481.11it/s][A
+                                                                                     [ABatchBALD:  50%|█████     | 10/20 [00:09<00:12,  1.23s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 448.24it/s][A
+                                                                                     [ABatchBALD:  55%|█████▌    | 11/20 [00:11<00:11,  1.28s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 447.08it/s][A
+                                                                                     [ABatchBALD:  60%|██████    | 12/20 [00:12<00:10,  1.31s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 469.24it/s][A
+                                                                                     [ABatchBALD:  65%|██████▌   | 13/20 [00:13<00:09,  1.32s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 458.99it/s][A
+                                                                                     [ABatchBALD:  70%|███████   | 14/20 [00:15<00:07,  1.33s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 457.34it/s][A
+                                                                                     [ABatchBALD:  75%|███████▌  | 15/20 [00:16<00:06,  1.33s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 458.70it/s][A
+                                                                                     [ABatchBALD:  80%|████████  | 16/20 [00:17<00:05,  1.35s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 481.59it/s][A
+                                                                                     [ABatchBALD:  85%|████████▌ | 17/20 [00:19<00:04,  1.34s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 453.06it/s][A
+                                                                                     [ABatchBALD:  90%|█████████ | 18/20 [00:20<00:02,  1.34s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 457.95it/s][A
+                                                                                     [ABatchBALD:  95%|█████████▌| 19/20 [00:21<00:01,  1.35s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 462.19it/s][A
+                                                                                     [ABatchBALD: 100%|██████████| 20/20 [00:23<00:00,  1.36s/it]                                                          done (23.8s, acquired 20 samples)
+      [BatchBALD] Retraining model... done (22.8s)
+      [BatchBALD] Final C-index: 0.6943 (Δ=+0.0118) [Total: 46.6s]
+
+      [Variance] Starting acquisition...
+      [Variance] Initial C-index: 0.6824 (verified same as base)
+      [Variance] Running acquisition (budget=20)... variance_of_probs score:  [0.00177925 0.00154495 0.00048063 ... 0.00046778 0.00205026 0.00352378]
+sorted_indices:  [1575   11   54 ... 1362 1372 1808]
+done (0.1s, acquired 20 samples)
+      [Variance] Retraining model... done (23.8s)
+      [Variance] Final C-index: 0.6951 (Δ=+0.0127) [Total: 23.9s]
+
+      [Entropy] Starting acquisition...
+      [Entropy] Initial C-index: 0.6824 (verified same as base)
+      [Entropy] Running acquisition (budget=20)... entropy_of_probs score:  [2.4471061  3.0366902  0.90423435 ... 1.1756705  2.109663   1.04413   ]
+sorted_indices:  [1900 1593 1454 ... 1180 1526 1145]
+done (0.1s, acquired 20 samples)
+      [Entropy] Retraining model... done (22.6s)
+      [Entropy] Final C-index: 0.6835 (Δ=+0.0010) [Total: 22.7s]
+
+      [Random] Starting acquisition...
+      [Random] Initial C-index: 0.6824 (verified same as base)
+      [Random] Running acquisition (budget=20)... done (0.0s, acquired 20 samples)
+      [Random] Retraining model... done (22.7s)
+      [Random] Final C-index: 0.6917 (Δ=+0.0092) [Total: 22.7s]
+
+  Trial 5 completed
+
+
+======================================================================
+RESULTS
+======================================================================
+
+Method Rankings (by mean IMPROVEMENT - the fair metric!):
+----------------------------------------------------------------------
+1. Variance                            +0.0117 ± 0.0041 🏆
+2. BatchBALD                           +0.0109 ± 0.0036 🥈
+3. Random                              -0.0055 ± 0.0113 🥉
+4. Entropy                             -0.0069 ± 0.0101 
+
+Initial C-index (should be SAME for all methods):
+----------------------------------------------------------------------
+BatchBALD                           0.6722 ± 0.0096
+Variance                            0.6722 ± 0.0096
+Entropy                             0.6722 ± 0.0096
+Random                              0.6722 ± 0.0096
+
+Statistical Comparisons (Paired t-tests on improvement):
+----------------------------------------------------------------------
+
+BatchBALD vs Variance:
+  Mean difference: -0.0007
+  t-statistic: -1.336, p-value: 0.2526 
+
+BatchBALD vs Entropy:
+  Mean difference: +0.0178
+  t-statistic: 5.219, p-value: 0.0064 ✓ Significant
+
+BatchBALD vs Random:
+  Mean difference: +0.0164
+  t-statistic: 4.144, p-value: 0.0143 ✓ Significant
+
+
+Fair comparison complete!
