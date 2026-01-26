@@ -1,0 +1,164 @@
+======================================================================
+DEBUGGING OPTIMIZED BATCHBALD
+======================================================================
+
+Loading data...
+Training base model...
+Pre-filtering 1961 → 500 samples...
+
+======================================================================
+TEST 1: Check if optimized code runs correctly
+======================================================================
+
+1. Running ORIGINAL BatchBALD...
+Conditional Entropy:   0%|          | 0/500 [00:00<?, ?it/s]Conditional Entropy: 100%|██████████| 500/500 [00:00<00:00, 2355.04it/s]                                                                        BatchBALD:   0%|          | 0/10 [00:00<?, ?it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 1773.27it/s][A
+                                                                                    [ABatchBALD:  10%|█         | 1/10 [00:00<00:05,  1.75it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2418.75it/s][A
+                                                                                    [ABatchBALD:  20%|██        | 2/10 [00:00<00:03,  2.18it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2294.88it/s][A
+                                                                                    [ABatchBALD:  30%|███       | 3/10 [00:01<00:02,  2.35it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 1523.53it/s][A
+                                                                                    [ABatchBALD:  40%|████      | 4/10 [00:01<00:02,  2.15it/s]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 357.08it/s][A
+                                                                                     [ABatchBALD:  50%|█████     | 5/10 [00:03<00:04,  1.06it/s]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 356.79it/s][A
+                                                                                     [ABatchBALD:  60%|██████    | 6/10 [00:05<00:04,  1.19s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 382.51it/s][A
+                                                                                     [ABatchBALD:  70%|███████   | 7/10 [00:06<00:03,  1.31s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 374.28it/s][A
+                                                                                     [ABatchBALD:  80%|████████  | 8/10 [00:08<00:02,  1.40s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 359.55it/s][A
+                                                                                     [ABatchBALD:  90%|█████████ | 9/10 [00:10<00:01,  1.49s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 365.30it/s][A
+                                                                                     [ABatchBALD: 100%|██████████| 10/10 [00:11<00:00,  1.55s/it]                                                             ✓ Selected 10 samples
+   Indices: [482, 453, 478, 488, 452]... (showing first 5)
+
+2. Running OPTIMIZED (λ₁=0.0, window only)...
+
+[OptimizedBatchBALD] λ_variance=0.0, λ_window=2.0
+[OptimizedBatchBALD] Window weights: min=1.0000, max=1.1138, mean=1.0100
+Conditional Entropy:   0%|          | 0/500 [00:00<?, ?it/s]Conditional Entropy: 100%|██████████| 500/500 [00:00<00:00, 2116.90it/s]                                                                        BatchBALD:   0%|          | 0/10 [00:00<?, ?it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2462.69it/s][A
+                                                                                    [ABatchBALD:  10%|█         | 1/10 [00:00<00:03,  2.46it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2433.15it/s][A
+                                                                                    [ABatchBALD:  20%|██        | 2/10 [00:00<00:03,  2.24it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2587.26it/s][A
+                                                                                    [ABatchBALD:  30%|███       | 3/10 [00:01<00:02,  2.43it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2213.82it/s][A
+                                                                                    [ABatchBALD:  40%|████      | 4/10 [00:01<00:02,  2.38it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2496.36it/s][A
+                                                                                    [ABatchBALD:  50%|█████     | 5/10 [00:02<00:02,  2.45it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2247.24it/s][A
+                                                                                    [ABatchBALD:  60%|██████    | 6/10 [00:02<00:01,  2.43it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2505.43it/s][A
+                                                                                    [ABatchBALD:  70%|███████   | 7/10 [00:02<00:01,  2.45it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2324.25it/s][A
+                                                                                    [ABatchBALD:  80%|████████  | 8/10 [00:03<00:00,  2.43it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2411.08it/s][A
+                                                                                    [ABatchBALD:  90%|█████████ | 9/10 [00:03<00:00,  2.32it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2295.21it/s][A
+                                                                                    [ABatchBALD: 100%|██████████| 10/10 [00:04<00:00,  2.36it/s]                                                             ✓ Selected 10 samples
+   Indices: [250, 341, 421, 497, 156]... (showing first 5)
+
+3. Running OPTIMIZED (λ₁=0.3, window + variance)...
+
+[OptimizedBatchBALD] λ_variance=0.3, λ_window=2.0
+[OptimizedBatchBALD] Window weights: min=1.0000, max=1.1135, mean=1.0105
+[OptimizedBatchBALD] Variance scores: min=0.000000, max=0.056726, mean=0.005247
+Conditional Entropy:   0%|          | 0/500 [00:00<?, ?it/s]Conditional Entropy: 100%|██████████| 500/500 [00:00<00:00, 2640.53it/s]                                                                        BatchBALD:   0%|          | 0/10 [00:00<?, ?it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 1908.39it/s][A
+                                                                                    [ABatchBALD:  10%|█         | 1/10 [00:00<00:04,  1.91it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2396.07it/s][A
+                                                                                    [ABatchBALD:  20%|██        | 2/10 [00:00<00:03,  2.22it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2676.37it/s][A
+                                                                                    [ABatchBALD:  30%|███       | 3/10 [00:01<00:02,  2.39it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2417.82it/s][A
+                                                                                    [ABatchBALD:  40%|████      | 4/10 [00:01<00:02,  2.39it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2544.70it/s][A
+                                                                                    [ABatchBALD:  50%|█████     | 5/10 [00:02<00:02,  2.47it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2384.13it/s][A
+                                                                                    [ABatchBALD:  60%|██████    | 6/10 [00:02<00:01,  2.50it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2679.22it/s][A
+                                                                                    [ABatchBALD:  70%|███████   | 7/10 [00:02<00:01,  2.56it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2250.31it/s][A
+                                                                                    [ABatchBALD:  80%|████████  | 8/10 [00:03<00:00,  2.50it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2667.01it/s][A
+                                                                                    [ABatchBALD:  90%|█████████ | 9/10 [00:03<00:00,  2.50it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2410.49it/s][A
+                                                                                    [ABatchBALD: 100%|██████████| 10/10 [00:04<00:00,  2.48it/s]                                                             ✓ Selected 10 samples
+   Indices: [422, 474, 320, 491, 124]... (showing first 5)
+
+======================================================================
+TEST 2: Compare characteristics of selected samples
+======================================================================
+
+Original BatchBALD:
+  Total variance: mean=0.027685, std=0.018746
+  Window uncertainty: mean=0.000704, std=0.001906
+  Spatial diversity: 21.5531
+  Censoring time: mean=2.25, std=1.26
+
+Optimized (λ₁=0.0, window only):
+  Total variance: mean=0.007980, std=0.005662
+  Window uncertainty: mean=0.000097, std=0.000155
+  Spatial diversity: 13.2989
+  Censoring time: mean=2.17, std=2.70
+
+  Changes vs Original:
+    Total variance: -0.019705 (-71.2%)
+    Window uncertainty: -0.000607 (-86.2%)
+    Spatial diversity: -8.2542 (-38.3%)
+
+Optimized (λ₁=0.3, window + variance):
+  Total variance: mean=0.005716, std=0.003175
+  Window uncertainty: mean=0.000198, std=0.000373
+  Spatial diversity: 12.2626
+  Censoring time: mean=2.24, std=1.40
+
+  Changes vs Original:
+    Total variance: -0.021969 (-79.4%)
+    Window uncertainty: -0.000505 (-71.8%)
+    Spatial diversity: -9.2904 (-43.1%)
+
+======================================================================
+TEST 3: Check overlap between selections
+======================================================================
+
+Original vs Window-only: 1/10 samples overlap (10%)
+Original vs Window+Variance: 0/10 samples overlap (0%)
+Window-only vs Window+Variance: 3/10 samples overlap (30%)
+
+======================================================================
+ANALYSIS COMPLETE
+======================================================================
