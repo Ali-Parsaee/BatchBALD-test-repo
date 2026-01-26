@@ -198,4 +198,26 @@ done (0.1s, acquired 20 samples)
 SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
 SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 499.22it/s][A
                                                                                      [ABatchBALD: 100%|██████████| 20/20 [00:21<00:00,  1.28s/it]                                                          done (22.0s, acquired 20 samples)
-      [BatchBALD] Retraining model... 
+      [BatchBALD] Retraining model... done (24.0s)
+      [BatchBALD] Final C-index: 0.6700 (Δ=+0.0057) [Total: 46.0s]
+
+      [Variance] Starting acquisition...
+      [Variance] Initial C-index: 0.6643 (verified same as base)
+      [Variance] Running acquisition (budget=20)... variance_of_probs score:  [0.00180553 0.00163532 0.00053692 ... 0.00054439 0.00209337 0.00170785]
+sorted_indices:  [ 657 1231  698 ... 1505 1855 1632]
+done (0.1s, acquired 20 samples)
+      [Variance] Retraining model... done (24.0s)
+      [Variance] Final C-index: 0.6704 (Δ=+0.0061) [Total: 24.1s]
+
+      [Entropy] Starting acquisition...
+      [Entropy] Initial C-index: 0.6643 (verified same as base)
+      [Entropy] Running acquisition (budget=20)... entropy_of_probs score:  [2.523313  2.4689415 0.9396595 ... 1.124305  1.6316634 0.7186359]
+sorted_indices:  [  12  905  747 ... 1262   40 1260]
+done (0.1s, acquired 20 samples)
+      [Entropy] Retraining model... done (22.6s)
+      [Entropy] Final C-index: 0.6444 (Δ=-0.0198) [Total: 22.6s]
+
+      [Random] Starting acquisition...
+      [Random] Initial C-index: 0.6643 (verified same as base)
+      [Random] Running acquisition (budget=20)... done (0.0s, acquired 20 samples)
+      [Random] Retraining model... 
