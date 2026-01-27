@@ -1,0 +1,165 @@
+======================================================================
+TESTING CBALD-Diverse: Can it beat C-BALD?
+======================================================================
+
+Strategy: Use C-BALD's proven scoring + add diversity!
+  1. Compute C-BALD scores (information value weighting)
+  2. Select top 3x candidates by C-BALD score
+  3. Greedily pick diverse subset (avoid redundancy)
+
+Methods:
+  1. CBALD-Diverse (NEW - C-BALD + diversity) ⭐
+  2. C-BALD (Current champion)
+  3. BatchBALD (Original)
+  4. Variance
+
+Settings:
+  Trials: 1
+  Budget: 20
+  Pre-filter size: 500
+  Increment: 60
+
+Loading NACD dataset...
+   Dataset shape: (2402, 50)
+   Device: cpu
+
+Running 1 trials...
+
+  Trial 1/1
+  --------------------------------------------------------------------
+
+      Setting random seed: 100
+      Training SHARED base model for all methods...
+      Shared base model trained (46.9s)
+      Shared initial C-index: 0.6682
+      All methods will start from this SAME model!
+
+      [CBALD-Diverse] Starting acquisition...
+      [CBALD-Diverse] Initial C-index: 0.6682 (verified same as base)
+      [CBALD-Diverse] Running acquisition (budget=20)... done (0.2s, acquired 20 samples)
+      [CBALD-Diverse] Retraining model... done (39.4s)
+      [CBALD-Diverse] Final C-index: 0.6848 (Δ=+0.0166) [Total: 39.7s]
+
+      [C-BALD] Starting acquisition...
+      [C-BALD] Initial C-index: 0.6682 (verified same as base)
+      [C-BALD] Running acquisition (budget=20)... cbald_censored_regression score:  [1.9825572 2.500573  1.1348815 ... 1.2829225 2.2632315 0.5881944]
+sorted_indices:  [1238  708 1387 ...  300 1956  782]
+done (0.1s, acquired 20 samples)
+      [C-BALD] Retraining model... done (47.5s)
+      [C-BALD] Final C-index: 0.6825 (Δ=+0.0143) [Total: 47.6s]
+
+      [BatchBALD] Starting acquisition...
+      [BatchBALD] Initial C-index: 0.6682 (verified same as base)
+      [BatchBALD] Pre-filtering 1961 → 500 samples... done (0.1s)
+      [BatchBALD] Running acquisition (budget=20)... Conditional Entropy:   0%|          | 0/500 [00:00<?, ?it/s]Conditional Entropy: 100%|██████████| 500/500 [00:00<00:00, 1598.05it/s]                                                                        BatchBALD:   0%|          | 0/20 [00:00<?, ?it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 1897.41it/s][A
+                                                                                    [ABatchBALD:   5%|▌         | 1/20 [00:00<00:09,  2.06it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 2004.13it/s][A
+                                                                                    [ABatchBALD:  10%|█         | 2/20 [00:00<00:08,  2.14it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 1161.62it/s][A
+                                                                                    [ABatchBALD:  15%|█▌        | 3/20 [00:01<00:09,  1.79it/s]
+ExactJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+ExactJointEntropy.compute_batch: 100%|██████████| 500/500 [00:00<00:00, 901.68it/s][A
+                                                                                   [ABatchBALD:  20%|██        | 4/20 [00:02<00:10,  1.53it/s]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 203.22it/s][A
+                                                                                     [ABatchBALD:  25%|██▌       | 5/20 [00:05<00:21,  1.43s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 207.97it/s][A
+                                                                                     [ABatchBALD:  30%|███       | 6/20 [00:07<00:26,  1.88s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 206.13it/s][A
+                                                                                     [ABatchBALD:  35%|███▌      | 7/20 [00:10<00:28,  2.17s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 201.38it/s][A
+                                                                                     [ABatchBALD:  40%|████      | 8/20 [00:13<00:28,  2.38s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 196.61it/s][A
+                                                                                     [ABatchBALD:  45%|████▌     | 9/20 [00:16<00:28,  2.55s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 200.52it/s][A
+                                                                                     [ABatchBALD:  50%|█████     | 10/20 [00:19<00:26,  2.64s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 215.52it/s][A
+                                                                                     [ABatchBALD:  55%|█████▌    | 11/20 [00:22<00:24,  2.67s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 205.19it/s][A
+                                                                                     [ABatchBALD:  60%|██████    | 12/20 [00:24<00:21,  2.73s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 201.20it/s][A
+                                                                                     [ABatchBALD:  65%|██████▌   | 13/20 [00:27<00:19,  2.77s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 199.52it/s][A
+                                                                                     [ABatchBALD:  70%|███████   | 14/20 [00:30<00:16,  2.81s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:01<00:00, 345.94it/s][A
+                                                                                     [ABatchBALD:  75%|███████▌  | 15/20 [00:32<00:12,  2.49s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 231.37it/s][A
+                                                                                     [ABatchBALD:  80%|████████  | 16/20 [00:34<00:09,  2.49s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 230.43it/s][A
+                                                                                     [ABatchBALD:  85%|████████▌ | 17/20 [00:37<00:07,  2.54s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 222.70it/s][A
+                                                                                     [ABatchBALD:  90%|█████████ | 18/20 [00:40<00:05,  2.60s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 218.11it/s][A
+                                                                                     [ABatchBALD:  95%|█████████▌| 19/20 [00:43<00:02,  2.65s/it]
+SampledJointEntropy.compute_batch:   0%|          | 0/500 [00:00<?, ?it/s][A
+SampledJointEntropy.compute_batch: 100%|██████████| 500/500 [00:02<00:00, 212.37it/s][A
+                                                                                     [ABatchBALD: 100%|██████████| 20/20 [00:45<00:00,  2.70s/it]                                                          done (46.5s, acquired 20 samples)
+      [BatchBALD] Retraining model... done (40.8s)
+      [BatchBALD] Final C-index: 0.6795 (Δ=+0.0113) [Total: 87.4s]
+
+      [Variance] Starting acquisition...
+      [Variance] Initial C-index: 0.6682 (verified same as base)
+      [Variance] Running acquisition (budget=20)... variance_of_probs score:  [0.00183114 0.00166977 0.00082983 ... 0.00035692 0.         0.00104076]
+sorted_indices:  [1238  708 1126 ... 1048 1036  425]
+done (0.1s, acquired 20 samples)
+      [Variance] Retraining model... done (49.4s)
+      [Variance] Final C-index: 0.6783 (Δ=+0.0101) [Total: 49.6s]
+
+  Trial 1 completed
+
+
+======================================================================
+RESULTS
+======================================================================
+
+/usr/local/lib/python3.11/dist-packages/numpy/_core/_methods.py:222: RuntimeWarning: Degrees of freedom <= 0 for slice
+  ret = _var(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+/usr/local/lib/python3.11/dist-packages/numpy/_core/_methods.py:214: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+Method Rankings (by mean IMPROVEMENT - the fair metric!):
+----------------------------------------------------------------------
+1. CBALD-Diverse                       +0.0166 ± nan 🏆
+2. C-BALD                              +0.0143 ± nan 🥈
+3. BatchBALD                           +0.0113 ± nan 🥉
+4. Variance                            +0.0101 ± nan 
+
+Initial C-index (should be SAME for all methods):
+----------------------------------------------------------------------
+CBALD-Diverse                       0.6682 ± nan
+C-BALD                              0.6682 ± nan
+BatchBALD                           0.6682 ± nan
+Variance                            0.6682 ± nan
+
+Statistical Comparisons (Paired t-tests on improvement):
+----------------------------------------------------------------------
+/usr/local/lib/python3.11/dist-packages/scipy/stats/_stats_py.py:1251: RuntimeWarning: divide by zero encountered in divide
+  var *= (n / (n-ddof))  # to avoid error on division by zero
+/usr/local/lib/python3.11/dist-packages/scipy/stats/_stats_py.py:1251: RuntimeWarning: invalid value encountered in scalar multiply
+  var *= (n / (n-ddof))  # to avoid error on division by zero
+
+BatchBALD vs Variance:
+  Mean difference: +0.0012
+  t-statistic: nan, p-value: nan 
+
+BatchBALD vs C-BALD:
+  Mean difference: -0.0030
+  t-statistic: nan, p-value: nan 
+
