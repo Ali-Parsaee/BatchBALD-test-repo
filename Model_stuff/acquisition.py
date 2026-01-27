@@ -1503,14 +1503,49 @@ def c_batchbald_acquire(model, X_pool, batch_size, time_bins, config,
     K, N, C = ensemble_survival.shape
     print(f"[C-BatchBALD] Ensemble shape: K={K} models, N={N} samples, C={C} time bins")
 
-    # Step 4: Apply BatchBALD greedy selection using joint entropy
-    # BatchBALD maximizes: H(Y_batch | X_batch) - 1/K * sum_k H(Y_batch | X_batch, theta_k)
-    # Which is equivalent to maximizing mutual information I(Y_batch; Theta | X_batch)
+    # Step 4: Fast greedy selection using individual BALD scores + diversity
+    # This is a faster approximation of full BatchBALD joint entropy
+    # Uses marginal mutual information per sample instead of joint
 
+    print(f"[C-BatchBALD] Computing individual BALD scores...")
+
+    # Compute individual BALD (mutual information) for each sample
+    # BALD = H(E[p]) - E[H(p)] for each sample independently
+    bald_scores = np.zeros(N)
+
+    for i in range(N):
+        # Get ensemble predictions for this sample
+        sample_probs = ensemble_survival[:, i, :]  # [K, C]
+
+        # H(E[p]) - entropy of the average prediction
+        avg_prob = sample_probs.mean(axis=0)  # [C]
+        avg_prob = np.clip(avg_prob, 1e-10, 1.0)
+        h_avg = -np.sum(avg_prob * np.log(avg_prob + 1e-10))
+
+        # E[H(p)] - expected entropy across ensemble
+        expected_h = 0.0
+        for k in range(K):
+            p = sample_probs[k]
+            p = np.clip(p, 1e-10, 1.0)
+            expected_h += -np.sum(p * np.log(p + 1e-10))
+        expected_h /= K
+
+        # BALD score = mutual information
+        bald_scores[i] = h_avg - expected_h
+
+    # Normalize BALD scores for combination
+    bald_min, bald_max = bald_scores.min(), bald_scores.max()
+    if bald_max - bald_min > 1e-8:
+        bald_normalized = (bald_scores - bald_min) / (bald_max - bald_min)
+    else:
+        bald_normalized = np.ones(N)
+
+    # Greedy diverse selection: maximize BALD while maintaining diversity
     selected_indices = []
     remaining_indices = list(range(N))
 
-    # Greedy selection
+    print(f"[C-BatchBALD] Greedy selection with diversity...")
+
     for iter_num in range(batch_size):
         if not remaining_indices:
             break
@@ -1519,42 +1554,34 @@ def c_batchbald_acquire(model, X_pool, batch_size, time_bins, config,
         best_idx = None
 
         for idx in remaining_indices:
-            # Compute joint entropy if we add this sample to the selected batch
-            candidate_batch = selected_indices + [idx]
+            # BALD component (information value from BatchBALD)
+            bald_component = bald_normalized[idx]
 
-            # Get survival probabilities for current batch
-            batch_probs = ensemble_survival[:, candidate_batch, :]  # [K, batch_size, C]
+            # Diversity component (JS divergence from selected samples)
+            if len(selected_indices) > 0:
+                # Compute diversity as average JS divergence from selected samples
+                p_candidate = ensemble_survival[:, idx, :].mean(axis=0)  # [C]
+                p_candidate = np.clip(p_candidate, 1e-10, 1.0)
+                p_candidate = p_candidate / p_candidate.sum()
 
-            # Compute entropy of average (H(E[p]))
-            avg_probs = batch_probs.mean(axis=0)  # [batch_size, C]
+                diversity_score = 0.0
+                for sel_idx in selected_indices:
+                    p_sel = ensemble_survival[:, sel_idx, :].mean(axis=0)  # [C]
+                    p_sel = np.clip(p_sel, 1e-10, 1.0)
+                    p_sel = p_sel / p_sel.sum()
 
-            # For joint distribution, we need to consider all samples together
-            # Approximate joint entropy using sum of marginal entropies (simplified)
-            # This is a computationally efficient approximation
+                    # JS divergence
+                    m = (p_candidate + p_sel) / 2.0
+                    js_div = 0.5 * np.sum(p_candidate * np.log((p_candidate + 1e-10) / (m + 1e-10)))
+                    js_div += 0.5 * np.sum(p_sel * np.log((p_sel + 1e-10) / (m + 1e-10)))
+                    diversity_score += js_div
 
-            marginal_entropy = 0.0
-            for sample_idx in range(len(candidate_batch)):
-                p = avg_probs[sample_idx]
-                p = np.clip(p, 1e-10, 1.0)
-                marginal_entropy += -np.sum(p * np.log(p + 1e-10))
+                diversity_score /= len(selected_indices)
+            else:
+                diversity_score = 0.0
 
-            # Compute expected entropy (E[H(p)])
-            expected_entropy = 0.0
-            for k in range(K):
-                sample_entropy = 0.0
-                for sample_idx in range(len(candidate_batch)):
-                    p = batch_probs[k, sample_idx]
-                    p = np.clip(p, 1e-10, 1.0)
-                    sample_entropy += -np.sum(p * np.log(p + 1e-10))
-                expected_entropy += sample_entropy
-            expected_entropy /= K
-
-            # Mutual information: I(Y; Theta | X) = H(E[p]) - E[H(p)]
-            mutual_info = marginal_entropy - expected_entropy
-
-            # Weight by C-BALD score to maintain information value prioritization
-            cbald_weight = cbald_scores[top_cbald_indices[idx]]
-            combined_score = mutual_info * (1.0 + 0.1 * cbald_weight)  # Small C-BALD bonus
+            # Combine BALD + diversity (60% BALD, 40% diversity for balance)
+            combined_score = 0.6 * bald_component + 0.4 * diversity_score
 
             if combined_score > best_score:
                 best_score = combined_score
@@ -1564,14 +1591,13 @@ def c_batchbald_acquire(model, X_pool, batch_size, time_bins, config,
             selected_indices.append(best_idx)
             remaining_indices.remove(best_idx)
 
-        if (iter_num + 1) % 5 == 0:
+        if (iter_num + 1) % 10 == 0:
             print(f"[C-BatchBALD] Selected {iter_num + 1}/{batch_size} samples...")
 
-    # Map back to original indices (ensure they're Python ints, not numpy ints)
+    # Map back to original indices (ensure they're Python ints)
     final_indices = [int(top_cbald_indices[i]) for i in selected_indices]
 
-    print(f"[C-BatchBALD] Selected {len(final_indices)} samples using joint entropy diversity")
-    print(f"[C-BatchBALD] DEBUG: Returning {len(final_indices)} indices, type: {type(final_indices)}, first 3: {final_indices[:3]}")
+    print(f"[C-BatchBALD] Completed! Selected {len(final_indices)} samples using BALD + diversity")
 
     # Return just indices (not tuple) to match BatchBALD API
     return final_indices
