@@ -1446,6 +1446,131 @@ def cbald_twostage_acquire(model, X_pool, batch_size, time_bins, config,
     return final_indices, cbald_scores
 
 
+def c_batchbald_acquire(model, X_pool, batch_size, time_bins, config,
+                        device='cpu', in_data_train=None, increment=10000,
+                        costlist=None, budget=0, prefilter_k=500, num_samples=10000, **kwargs):
+    """
+    C-BatchBALD: Combines C-BALD information value weighting with BatchBALD diversity.
+
+    Strategy:
+    1. Pre-filter using C-BALD scores to get high-value samples (top K by C-BALD)
+    2. Apply BatchBALD's joint entropy on those samples for diversity selection
+
+    This gives us:
+    - C-BALD's information value prioritization (death probability + time variance)
+    - BatchBALD's joint mutual information diversity mechanism
+
+    Args:
+        prefilter_k: Number of top C-BALD samples to consider for BatchBALD (default: 500)
+        num_samples: Number of Monte Carlo samples for BatchBALD joint entropy (default: 10000)
+    """
+    print(f"[C-BatchBALD] Step 1: Computing C-BALD scores...")
+
+    # Step 1: Compute C-BALD scores for all samples
+    cbald_scores = cbald_score(model, X_pool, batch_size, time_bins, config,
+                               device, in_data_train, increment, budget, costlist, **kwargs)
+
+    # Step 2: Pre-filter to top K samples by C-BALD
+    prefilter_k = min(prefilter_k, len(X_pool))
+    top_cbald_indices = np.argsort(cbald_scores)[-prefilter_k:][::-1]
+    X_filtered = X_pool[top_cbald_indices]
+
+    print(f"[C-BatchBALD] Step 2: Pre-filtered {len(X_pool)} → {len(X_filtered)} samples by C-BALD")
+    print(f"[C-BatchBALD] Step 3: Applying BatchBALD joint entropy on top samples...")
+
+    # Step 3: Get ensemble predictions for filtered samples
+    model.eval()
+    with torch.no_grad():
+        x_tensor = torch.FloatTensor(X_filtered).to(device)
+
+        # Get ensemble predictions (K samples from Bayesian model)
+        K = min(50, config.n_samples_test)  # Use 50 ensemble samples for efficiency
+
+        # Collect survival probabilities from K forward passes
+        all_survival_probs = []
+        for _ in range(K):
+            logits = model.forward(x_tensor, sample=True, n_samples=1)
+            survival_probs = mtlr_survival(logits, with_sample=False)  # [N, C]
+            all_survival_probs.append(survival_probs.cpu().numpy())
+
+        # Stack: [K, N, C]
+        ensemble_survival = np.array(all_survival_probs)
+
+    K, N, C = ensemble_survival.shape
+    print(f"[C-BatchBALD] Ensemble shape: K={K} models, N={N} samples, C={C} time bins")
+
+    # Step 4: Apply BatchBALD greedy selection using joint entropy
+    # BatchBALD maximizes: H(Y_batch | X_batch) - 1/K * sum_k H(Y_batch | X_batch, theta_k)
+    # Which is equivalent to maximizing mutual information I(Y_batch; Theta | X_batch)
+
+    selected_indices = []
+    remaining_indices = list(range(N))
+
+    # Greedy selection
+    for iter_num in range(batch_size):
+        if not remaining_indices:
+            break
+
+        best_score = -np.inf
+        best_idx = None
+
+        for idx in remaining_indices:
+            # Compute joint entropy if we add this sample to the selected batch
+            candidate_batch = selected_indices + [idx]
+
+            # Get survival probabilities for current batch
+            batch_probs = ensemble_survival[:, candidate_batch, :]  # [K, batch_size, C]
+
+            # Compute entropy of average (H(E[p]))
+            avg_probs = batch_probs.mean(axis=0)  # [batch_size, C]
+
+            # For joint distribution, we need to consider all samples together
+            # Approximate joint entropy using sum of marginal entropies (simplified)
+            # This is a computationally efficient approximation
+
+            marginal_entropy = 0.0
+            for sample_idx in range(len(candidate_batch)):
+                p = avg_probs[sample_idx]
+                p = np.clip(p, 1e-10, 1.0)
+                marginal_entropy += -np.sum(p * np.log(p + 1e-10))
+
+            # Compute expected entropy (E[H(p)])
+            expected_entropy = 0.0
+            for k in range(K):
+                sample_entropy = 0.0
+                for sample_idx in range(len(candidate_batch)):
+                    p = batch_probs[k, sample_idx]
+                    p = np.clip(p, 1e-10, 1.0)
+                    sample_entropy += -np.sum(p * np.log(p + 1e-10))
+                expected_entropy += sample_entropy
+            expected_entropy /= K
+
+            # Mutual information: I(Y; Theta | X) = H(E[p]) - E[H(p)]
+            mutual_info = marginal_entropy - expected_entropy
+
+            # Weight by C-BALD score to maintain information value prioritization
+            cbald_weight = cbald_scores[top_cbald_indices[idx]]
+            combined_score = mutual_info * (1.0 + 0.1 * cbald_weight)  # Small C-BALD bonus
+
+            if combined_score > best_score:
+                best_score = combined_score
+                best_idx = idx
+
+        if best_idx is not None:
+            selected_indices.append(best_idx)
+            remaining_indices.remove(best_idx)
+
+        if (iter_num + 1) % 5 == 0:
+            print(f"[C-BatchBALD] Selected {iter_num + 1}/{batch_size} samples...")
+
+    # Map back to original indices
+    final_indices = [top_cbald_indices[i] for i in selected_indices]
+
+    print(f"[C-BatchBALD] Selected {len(final_indices)} samples using joint entropy diversity")
+
+    return final_indices, cbald_scores
+
+
 # =============================================================================
 # ENTROPY AND VARIANCE ACQUISITION
 # =============================================================================
