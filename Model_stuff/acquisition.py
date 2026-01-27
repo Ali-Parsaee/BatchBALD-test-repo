@@ -1464,6 +1464,8 @@ def c_batchbald_acquire(model, X_pool, batch_size, time_bins, config,
         prefilter_k: Number of top C-BALD samples to consider for BatchBALD (default: 500)
         num_samples: Number of Monte Carlo samples for BatchBALD joint entropy (default: 10000)
     """
+    from model import mtlr_survival
+
     print(f"[C-BatchBALD] Step 1: Computing C-BALD scores...")
 
     # Step 1: Compute C-BALD scores for all samples
