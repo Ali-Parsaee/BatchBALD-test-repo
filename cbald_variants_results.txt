@@ -25,16 +25,17 @@ Running 5 trials...
   --------------------------------------------------------------------
       Setting random seed: 100
       Training SHARED base model for all methods...
-      Shared base model trained (26.7s)
+      Shared base model trained (25.5s)
 Traceback (most recent call last):
-  File "/home/user/BatchBALD-test-repo/test_cbald_variants.py", line 523, in <module>
+  File "/home/user/BatchBALD-test-repo/test_cbald_variants.py", line 551, in <module>
     main()
-  File "/home/user/BatchBALD-test-repo/test_cbald_variants.py", line 446, in main
+  File "/home/user/BatchBALD-test-repo/test_cbald_variants.py", line 474, in main
     trial_results = run_single_trial(trial_num, budget=20)
                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/user/BatchBALD-test-repo/test_cbald_variants.py", line 252, in run_single_trial
-    _, y_pred_survival = shared_model.predict(x_test, time_bins)
-                         ^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py", line 1965, in __getattr__
-    raise AttributeError(
-AttributeError: 'BayesLinMtlr' object has no attribute 'predict'
+  File "/home/user/BatchBALD-test-repo/test_cbald_variants.py", line 278, in run_single_trial
+    pred_times = expected_times_from_survival(mean_survival, time_bins)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/test_cbald_variants.py", line 110, in expected_times_from_survival
+    return (pdf * mids.reshape(1, -1)).sum(axis=1)
+            ~~~~^~~~~~~~~~~~~~~~~~~~~
+ValueError: operands could not be broadcast together with shapes (481,12) (1,11) 

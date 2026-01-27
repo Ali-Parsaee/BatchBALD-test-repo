@@ -93,6 +93,23 @@ def artificially_censor_true(times, events, num_initial_samples=50, seed=None):
     return censored_times, new_events, np.array(censored_indices)
 
 
+def expected_times_from_survival(surv_np, tbins):
+    """Convert survival probabilities to expected survival times."""
+    if isinstance(tbins, torch.Tensor):
+        tb = tbins.clone().detach().cpu().numpy()
+    else:
+        tb = np.array(tbins)
+    left_edges = np.concatenate([[0.0], tb[:-1]])
+    right_edges = tb
+    mids = (left_edges + right_edges) / 2.0
+    pdf = np.zeros_like(surv_np)
+    pdf[:, 0] = 1.0 - surv_np[:, 0]
+    pdf[:, 1:] = surv_np[:, :-1] - surv_np[:, 1:]
+    pdf = np.clip(pdf, 0.0, 1.0)
+    pdf = pdf / (pdf.sum(axis=1, keepdims=True) + 1e-12)
+    return (pdf * mids.reshape(1, -1)).sum(axis=1)
+
+
 def concordance(y_pred, y_test, cens):
     """Calculate concordance index."""
     n = len(y_pred)
@@ -174,7 +191,12 @@ def run_single_trial(trial_num, budget=20):
     )
 
     # Setup
-    time_bins = np.quantile(y_time_train_val[y_event_train_val == 1], np.linspace(0, 1, 10))
+    num_bins = 10
+    event_times = y_time_train_val[y_event_train_val == 1]
+    quantiles = np.linspace(0, 1, num_bins + 1)[1:]
+    time_bins = np.quantile(event_times, quantiles)
+    time_bins[-1] *= 1.05
+    time_bins = np.array([0] + list(time_bins))
 
     config = argparse.Namespace()
     config.pi = 0.5
@@ -249,10 +271,12 @@ def run_single_trial(trial_num, budget=20):
     # Evaluate shared model on test set
     shared_model.eval()
     with torch.no_grad():
-        _, y_pred_survival = shared_model.predict(x_test, time_bins)
-        median_survival = mtlr_survival(y_pred_survival.numpy())
+        logits = shared_model.forward(x_test, sample=True, n_samples=config.n_samples_test)
+        survival_probs = mtlr_survival(logits, with_sample=True)
+        mean_survival = survival_probs.mean(dim=0).cpu().numpy()
 
-    initial_cindex = concordance(median_survival, y_time_test, y_event_test)
+    pred_times = expected_times_from_survival(mean_survival, time_bins)
+    initial_cindex = concordance(-pred_times, y_time_test, y_event_test)
     print(f"      Shared initial C-index: {initial_cindex:.4f}")
     print("      All methods will start from this SAME model!")
 
@@ -296,9 +320,11 @@ def run_single_trial(trial_num, budget=20):
         # Verify same initial performance
         model.eval()
         with torch.no_grad():
-            _, y_pred_survival = model.predict(x_test, time_bins)
-            median_survival = mtlr_survival(y_pred_survival.numpy())
-        init_c = concordance(median_survival, y_time_test, y_event_test)
+            logits = model.forward(x_test, sample=True, n_samples=config.n_samples_test)
+            survival_probs = mtlr_survival(logits, with_sample=True)
+            mean_survival = survival_probs.mean(dim=0).cpu().numpy()
+        pred_times = expected_times_from_survival(mean_survival, time_bins)
+        init_c = concordance(-pred_times, y_time_test, y_event_test)
         print(f"      [{acq_name}] Initial C-index: {init_c:.4f} (verified same as base)")
 
         # Run acquisition
@@ -381,10 +407,12 @@ def run_single_trial(trial_num, budget=20):
         # Evaluate
         model.eval()
         with torch.no_grad():
-            _, y_pred_survival = model.predict(x_test, time_bins)
-            median_survival = mtlr_survival(y_pred_survival.numpy())
+            logits = model.forward(x_test, sample=True, n_samples=config.n_samples_test)
+            survival_probs = mtlr_survival(logits, with_sample=True)
+            mean_survival = survival_probs.mean(dim=0).cpu().numpy()
 
-        final_cindex = concordance(median_survival, y_time_test, y_event_test)
+        pred_times = expected_times_from_survival(mean_survival, time_bins)
+        final_cindex = concordance(-pred_times, y_time_test, y_event_test)
         improvement = final_cindex - initial_cindex
         total_time = acq_time + retrain_time
 
