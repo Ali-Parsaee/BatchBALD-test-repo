@@ -1,41 +1,0 @@
-======================================================================
-ACQUISITION FUNCTION COMPARISON
-======================================================================
-
-Settings:
-  Dataset: NACD
-  Initial labeled samples: 200
-  Acquisition budget: 30
-  Probe increment: 60
-  Number of trials: 15
-
-1. Loading NACD dataset...
-   Dataset shape: (2402, 50)
-
-2. Running 15 trials for each acquisition function...
-
-  Trial 1/15
-    Trial 100, Method: BatchBALD
-      Initial C-index: 0.6682
-Conditional Entropy:   0%|          | 0/1961 [00:00<?, ?it/s]Conditional Entropy:  52%|█████▏    | 1024/1961 [00:00<00:00, 3484.97it/s]Conditional Entropy: 100%|██████████| 1961/1961 [00:00<00:00, 3937.18it/s]                                                                          BatchBALD:   0%|          | 0/30 [00:00<?, ?it/s]
-ExactJointEntropy.compute_batch:   0%|          | 0/1961 [00:00<?, ?it/s][A
-ExactJointEntropy.compute_batch:  52%|█████▏    | 1024/1961 [00:00<00:00, 3473.74it/s][A
-ExactJointEntropy.compute_batch: 100%|██████████| 1961/1961 [00:00<00:00, 3644.20it/s][A
-                                                                                      [ABatchBALD:   3%|▎         | 1/30 [00:00<00:22,  1.26it/s]
-ExactJointEntropy.compute_batch:   0%|          | 0/1961 [00:00<?, ?it/s][A
-ExactJointEntropy.compute_batch:  52%|█████▏    | 1024/1961 [00:00<00:00, 3947.25it/s][A
-ExactJointEntropy.compute_batch: 100%|██████████| 1961/1961 [00:00<00:00, 3745.42it/s][A
-                                                                                      [ABatchBALD:   7%|▋         | 2/30 [00:01<00:21,  1.29it/s]
-ExactJointEntropy.compute_batch:   0%|          | 0/1961 [00:00<?, ?it/s][A
-ExactJointEntropy.compute_batch:  52%|█████▏    | 1024/1961 [00:00<00:00, 2743.20it/s][A
-ExactJointEntropy.compute_batch: 100%|██████████| 1961/1961 [00:00<00:00, 2643.12it/s][A
-                                                                                      [ABatchBALD:  10%|█         | 3/30 [00:02<00:23,  1.14it/s]
-ExactJointEntropy.compute_batch:   0%|          | 0/1961 [00:00<?, ?it/s][A
-ExactJointEntropy.compute_batch:  52%|█████▏    | 1024/1961 [00:00<00:00, 1580.39it/s][A
-ExactJointEntropy.compute_batch: 100%|██████████| 1961/1961 [00:01<00:00, 1491.96it/s][A
-                                                                                      [ABatchBALD:  13%|█▎        | 4/30 [00:04<00:29,  1.15s/it]
-ExactJointEntropy.compute_batch:   0%|          | 0/1961 [00:00<?, ?it/s][A
-ExactJointEntropy.compute_batch:  52%|█████▏    | 1024/1961 [00:03<00:03, 309.37it/s][A
-ExactJointEntropy.compute_batch: 100%|██████████| 1961/1961 [00:06<00:00, 320.76it/s][A
-                                                                                     [ABatchBALD:  17%|█▋        | 5/30 [00:10<01:16,  3.07s/it]
-SampledJointEntropy.compute_batch:   0%|          | 0/1961 [00:00<?, ?it/s][A
