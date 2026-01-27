@@ -24,6 +24,7 @@ from src.oracle.oracle import Oracle
 from src.acquisition.batchbald import SurvivalBatchBALD
 from src.acquisition.improved_batchbald import ImprovedBatchBALD
 from src.acquisition.weighted_batchbald import WeightedBatchBALD
+from src.acquisition.cbald_true import TrueCBALD
 from src.acquisition.entropy import EntropyAcquisition
 from src.acquisition.variance import VarianceAcquisition
 from src.evaluation.metrics import concordance_index, brier_score
@@ -151,6 +152,14 @@ def run_single_experiment(
                 batch_size=batch_size,
                 current_event=artificial_event
             )
+    elif acquisition_name == 'cbald_true':
+        # True C-BALD uses predictions directly
+        selected_indices = acq_func.select_batch(
+            train_preds,
+            artificial_time,
+            batch_size=batch_size,
+            current_event=artificial_event
+        )
     else:
         # Entropy and variance baselines
         selected_indices = acq_func.select_batch(
@@ -357,7 +366,7 @@ Examples:
     # Acquisition function selection
     parser.add_argument('--acquisition', type=str, default='all',
                         choices=['all', 'batchbald', 'improved_batchbald', 'weighted_batchbald',
-                                'entropy', 'variance'],
+                                'cbald_true', 'entropy', 'variance'],
                         help='Acquisition function to use (default: all)')
 
     # Experiment settings
@@ -420,6 +429,7 @@ Examples:
             'batchbald': SurvivalBatchBALD(probe_depth=args.probe_depth),
             'improved_batchbald': ImprovedBatchBALD(probe_depth=args.probe_depth),
             'weighted_batchbald': WeightedBatchBALD(probe_depth=args.probe_depth),
+            'cbald_true': TrueCBALD(probe_depth=args.probe_depth),
             'entropy': EntropyAcquisition(),
             'variance': VarianceAcquisition()
         }
@@ -430,6 +440,8 @@ Examples:
             acquisition_functions['improved_batchbald'] = ImprovedBatchBALD(probe_depth=args.probe_depth)
         elif args.acquisition == 'weighted_batchbald':
             acquisition_functions['weighted_batchbald'] = WeightedBatchBALD(probe_depth=args.probe_depth)
+        elif args.acquisition == 'cbald_true':
+            acquisition_functions['cbald_true'] = TrueCBALD(probe_depth=args.probe_depth)
         elif args.acquisition == 'entropy':
             acquisition_functions['entropy'] = EntropyAcquisition()
         elif args.acquisition == 'variance':
