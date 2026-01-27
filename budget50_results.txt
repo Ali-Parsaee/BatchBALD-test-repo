@@ -29,33 +29,33 @@ Running 5 trials...
 
       Setting random seed: 100
       Training SHARED base model for all methods...
-      Shared base model trained (48.4s)
+      Shared base model trained (24.9s)
       Shared initial C-index: 0.6682
       All methods will start from this SAME model!
 
       [CBALD-Diverse] Starting acquisition...
       [CBALD-Diverse] Initial C-index: 0.6682 (verified same as base)
       [CBALD-Diverse] Running acquisition (budget=50)... done (2.0s, acquired 50 samples)
-      [CBALD-Diverse] Retraining model... done (36.8s)
-      [CBALD-Diverse] Final C-index: 0.6928 (Δ=+0.0246) [Total: 38.9s]
+      [CBALD-Diverse] Retraining model... done (21.4s)
+      [CBALD-Diverse] Final C-index: 0.6928 (Δ=+0.0246) [Total: 23.4s]
 
       [CBALD-Adaptive] Starting acquisition...
       [CBALD-Adaptive] Initial C-index: 0.6682 (verified same as base)
-      [CBALD-Adaptive] Running acquisition (budget=50)... done (2.1s, acquired 50 samples)
-      [CBALD-Adaptive] Retraining model... done (34.7s)
-      [CBALD-Adaptive] Final C-index: 0.6945 (Δ=+0.0263) [Total: 36.8s]
+      [CBALD-Adaptive] Running acquisition (budget=50)... done (2.0s, acquired 50 samples)
+      [CBALD-Adaptive] Retraining model... done (20.8s)
+      [CBALD-Adaptive] Final C-index: 0.6945 (Δ=+0.0263) [Total: 22.8s]
 
       [CBALD-NoFilter] Starting acquisition...
       [CBALD-NoFilter] Initial C-index: 0.6682 (verified same as base)
-      [CBALD-NoFilter] Running acquisition (budget=50)... done (1.9s, acquired 50 samples)
-      [CBALD-NoFilter] Retraining model... done (35.8s)
-      [CBALD-NoFilter] Final C-index: 0.6928 (Δ=+0.0246) [Total: 37.7s]
+      [CBALD-NoFilter] Running acquisition (budget=50)... done (1.8s, acquired 50 samples)
+      [CBALD-NoFilter] Retraining model... done (21.6s)
+      [CBALD-NoFilter] Final C-index: 0.6928 (Δ=+0.0246) [Total: 23.4s]
 
       [CBALD-TwoStage] Starting acquisition...
       [CBALD-TwoStage] Initial C-index: 0.6682 (verified same as base)
-      [CBALD-TwoStage] Running acquisition (budget=50)... done (1.2s, acquired 50 samples)
-      [CBALD-TwoStage] Retraining model... done (36.7s)
-      [CBALD-TwoStage] Final C-index: 0.6927 (Δ=+0.0245) [Total: 37.9s]
+      [CBALD-TwoStage] Running acquisition (budget=50)... done (1.4s, acquired 50 samples)
+      [CBALD-TwoStage] Retraining model... done (21.1s)
+      [CBALD-TwoStage] Final C-index: 0.6927 (Δ=+0.0245) [Total: 22.6s]
 
       [C-BatchBALD] Starting acquisition...
       [C-BatchBALD] Initial C-index: 0.6682 (verified same as base)
@@ -63,22 +63,25 @@ Running 5 trials...
       [C-BatchBALD] Running acquisition (budget=50)... [C-BatchBALD] Step 1: Computing C-BALD scores...
 [C-BatchBALD] Step 2: Pre-filtered 500 → 500 samples by C-BALD
 [C-BatchBALD] Step 3: Applying BatchBALD joint entropy on top samples...
-ERROR: name 'mtlr_survival' is not defined
+ERROR: 
 Traceback (most recent call last):
   File "/home/user/BatchBALD-test-repo/test_budget50.py", line 355, in run_single_trial
     pool_indices = acq_func(
                    ^^^^^^^^^
-  File "/home/user/BatchBALD-test-repo/Model_stuff/acquisition.py", line 1493, in c_batchbald_acquire
+  File "/home/user/BatchBALD-test-repo/Model_stuff/acquisition.py", line 1495, in c_batchbald_acquire
     survival_probs = mtlr_survival(logits, with_sample=False)  # [N, C]
-                     ^^^^^^^^^^^^^
-NameError: name 'mtlr_survival' is not defined
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/Model_stuff/model.py", line 867, in mtlr_survival
+    assert logits.dim() == 2
+           ^^^^^^^^^^^^^^^^^
+AssertionError
       [C-BALD] Starting acquisition...
       [C-BALD] Initial C-index: 0.6682 (verified same as base)
       [C-BALD] Running acquisition (budget=50)... cbald_censored_regression score:  [1.9825572 2.500573  1.1348815 ... 1.2829225 2.2632315 0.5881944]
 sorted_indices:  [1238  708 1387 ...  300 1956  782]
 done (0.1s, acquired 50 samples)
-      [C-BALD] Retraining model... done (29.7s)
-      [C-BALD] Final C-index: 0.6928 (Δ=+0.0246) [Total: 29.9s]
+      [C-BALD] Retraining model... done (21.0s)
+      [C-BALD] Final C-index: 0.6928 (Δ=+0.0246) [Total: 21.1s]
 
   Trial 1 completed
 
@@ -87,75 +90,17 @@ done (0.1s, acquired 50 samples)
 
       Setting random seed: 101
       Training SHARED base model for all methods...
-      Shared base model trained (30.2s)
+      Shared base model trained (21.3s)
       Shared initial C-index: 0.6643
       All methods will start from this SAME model!
 
       [CBALD-Diverse] Starting acquisition...
       [CBALD-Diverse] Initial C-index: 0.6643 (verified same as base)
       [CBALD-Diverse] Running acquisition (budget=50)... done (1.9s, acquired 50 samples)
-      [CBALD-Diverse] Retraining model... done (32.1s)
-      [CBALD-Diverse] Final C-index: 0.6905 (Δ=+0.0263) [Total: 34.1s]
+      [CBALD-Diverse] Retraining model... done (20.9s)
+      [CBALD-Diverse] Final C-index: 0.6905 (Δ=+0.0263) [Total: 22.9s]
 
       [CBALD-Adaptive] Starting acquisition...
       [CBALD-Adaptive] Initial C-index: 0.6643 (verified same as base)
       [CBALD-Adaptive] Running acquisition (budget=50)... done (1.9s, acquired 50 samples)
-      [CBALD-Adaptive] Retraining model... done (32.4s)
-      [CBALD-Adaptive] Final C-index: 0.6894 (Δ=+0.0251) [Total: 34.3s]
-
-      [CBALD-NoFilter] Starting acquisition...
-      [CBALD-NoFilter] Initial C-index: 0.6643 (verified same as base)
-      [CBALD-NoFilter] Running acquisition (budget=50)... done (2.1s, acquired 50 samples)
-      [CBALD-NoFilter] Retraining model... done (35.3s)
-      [CBALD-NoFilter] Final C-index: 0.6905 (Δ=+0.0263) [Total: 37.4s]
-
-      [CBALD-TwoStage] Starting acquisition...
-      [CBALD-TwoStage] Initial C-index: 0.6643 (verified same as base)
-      [CBALD-TwoStage] Running acquisition (budget=50)... done (1.3s, acquired 50 samples)
-      [CBALD-TwoStage] Retraining model... done (34.9s)
-      [CBALD-TwoStage] Final C-index: 0.6905 (Δ=+0.0263) [Total: 36.2s]
-
-      [C-BatchBALD] Starting acquisition...
-      [C-BatchBALD] Initial C-index: 0.6643 (verified same as base)
-      [C-BatchBALD] Pre-filtering 1961 → 500 samples... done (0.0s)
-      [C-BatchBALD] Running acquisition (budget=50)... [C-BatchBALD] Step 1: Computing C-BALD scores...
-[C-BatchBALD] Step 2: Pre-filtered 500 → 500 samples by C-BALD
-[C-BatchBALD] Step 3: Applying BatchBALD joint entropy on top samples...
-ERROR: name 'mtlr_survival' is not defined
-Traceback (most recent call last):
-  File "/home/user/BatchBALD-test-repo/test_budget50.py", line 355, in run_single_trial
-    pool_indices = acq_func(
-                   ^^^^^^^^^
-  File "/home/user/BatchBALD-test-repo/Model_stuff/acquisition.py", line 1493, in c_batchbald_acquire
-    survival_probs = mtlr_survival(logits, with_sample=False)  # [N, C]
-                     ^^^^^^^^^^^^^
-NameError: name 'mtlr_survival' is not defined
-      [C-BALD] Starting acquisition...
-      [C-BALD] Initial C-index: 0.6643 (verified same as base)
-      [C-BALD] Running acquisition (budget=50)... cbald_censored_regression score:  [1.7734445 1.5607971 1.1733128 ... 2.2258902 2.9957423 1.3398659]
-sorted_indices:  [ 657  698  962 ...  924  287 1956]
-done (0.1s, acquired 50 samples)
-      [C-BALD] Retraining model... done (43.6s)
-      [C-BALD] Final C-index: 0.6886 (Δ=+0.0243) [Total: 43.8s]
-
-  Trial 2 completed
-
-  Trial 3/5
-  --------------------------------------------------------------------
-
-      Setting random seed: 102
-      Training SHARED base model for all methods...
-      Shared base model trained (29.9s)
-      Shared initial C-index: 0.6633
-      All methods will start from this SAME model!
-
-      [CBALD-Diverse] Starting acquisition...
-      [CBALD-Diverse] Initial C-index: 0.6633 (verified same as base)
-      [CBALD-Diverse] Running acquisition (budget=50)... done (1.8s, acquired 50 samples)
-      [CBALD-Diverse] Retraining model... done (21.1s)
-      [CBALD-Diverse] Final C-index: 0.6894 (Δ=+0.0261) [Total: 22.9s]
-
-      [CBALD-Adaptive] Starting acquisition...
-      [CBALD-Adaptive] Initial C-index: 0.6633 (verified same as base)
-      [CBALD-Adaptive] Running acquisition (budget=50)... done (1.8s, acquired 50 samples)
       [CBALD-Adaptive] Retraining model... 

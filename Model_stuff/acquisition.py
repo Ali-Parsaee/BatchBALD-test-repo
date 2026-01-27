@@ -1492,7 +1492,9 @@ def c_batchbald_acquire(model, X_pool, batch_size, time_bins, config,
         all_survival_probs = []
         for _ in range(K):
             logits = model.forward(x_tensor, sample=True, n_samples=1)
-            survival_probs = mtlr_survival(logits, with_sample=False)  # [N, C]
+            # logits shape is [1, N, C] from n_samples=1, squeeze to [N, C]
+            logits_2d = logits.squeeze(0)
+            survival_probs = mtlr_survival(logits_2d, with_sample=False)  # [N, C]
             all_survival_probs.append(survival_probs.cpu().numpy())
 
         # Stack: [K, N, C]
