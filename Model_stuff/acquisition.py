@@ -1571,6 +1571,7 @@ def c_batchbald_acquire(model, X_pool, batch_size, time_bins, config,
     final_indices = [int(top_cbald_indices[i]) for i in selected_indices]
 
     print(f"[C-BatchBALD] Selected {len(final_indices)} samples using joint entropy diversity")
+    print(f"[C-BatchBALD] DEBUG: Returning {len(final_indices)} indices, type: {type(final_indices)}, first 3: {final_indices[:3]}")
 
     # Return just indices (not tuple) to match BatchBALD API
     return final_indices
