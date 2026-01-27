@@ -1138,6 +1138,314 @@ def cbald_diverse_acquire(model, X_pool, batch_size, time_bins, config,
     return final_indices, cbald_scores
 
 
+def cbald_diverse_adaptive_acquire(model, X_pool, batch_size, time_bins, config,
+                                    device='cpu', in_data_train=None, increment=10000,
+                                    costlist=None, budget=0, start_ratio=0.1, end_ratio=0.5, **kwargs):
+    """
+    CBALD-Diverse with Adaptive Ratio: Exploit early, explore later.
+
+    Strategy:
+    - Early selections: High C-BALD emphasis (90% C-BALD + 10% diversity)
+    - Later selections: Balanced (50% C-BALD + 50% diversity)
+
+    This should improve on CBALD-Diverse by adapting strategy as batch fills.
+
+    Args:
+        start_ratio: Initial diversity ratio (default 0.1 = 10% diversity)
+        end_ratio: Final diversity ratio (default 0.5 = 50% diversity)
+    """
+
+    # Step 1: Compute C-BALD scores
+    cbald_scores = cbald_score(model, X_pool, batch_size, time_bins, config,
+                               device, in_data_train, increment, budget, costlist, **kwargs)
+
+    # Step 2: Get top candidates (3x budget for diversity selection)
+    top_k = min(batch_size * 3, len(X_pool))
+    top_indices = np.argsort(cbald_scores)[-top_k:][::-1]
+
+    # If pool too small, just return top samples
+    if len(top_indices) <= batch_size:
+        final_indices = top_indices[:batch_size].tolist()
+        return final_indices, cbald_scores
+
+    # Step 3: Get probability distributions for diversity computation
+    model.eval()
+    with torch.no_grad():
+        x_test_tensor = torch.FloatTensor(X_pool[top_indices]).to(device)
+        survival_outputs, _, ensemble_outputs = _make_prediction(model, x_test_tensor, time_bins, config)
+
+    K, N, C = ensemble_outputs.shape
+    probs = ensemble_to_pdf(ensemble_outputs, device)
+    avg_probs = probs.mean(dim=1).cpu().numpy()  # [N, C]
+
+    # Step 4: Adaptive greedy diversity selection
+    selected_local = []
+    selected_probs = []
+    remaining = list(range(len(top_indices)))
+
+    # Select first sample (highest C-BALD score)
+    selected_local.append(0)
+    remaining.remove(0)
+    p_sel = avg_probs[0]
+    p_sel = p_sel / (p_sel.sum() + 1e-12)
+    selected_probs.append(p_sel)
+
+    # Greedily select remaining samples with ADAPTIVE ratio
+    while len(selected_local) < batch_size and len(remaining) > 0:
+        # Compute current diversity ratio based on progress
+        progress = len(selected_local) / batch_size  # 0 to 1
+        current_ratio = start_ratio + (end_ratio - start_ratio) * progress
+
+        best_idx = None
+        best_combined_score = -np.inf
+
+        for i in remaining:
+            # C-BALD score component
+            local_cbald_score = cbald_scores[top_indices[i]]
+
+            # Diversity component
+            p_i = avg_probs[i]
+            p_i = p_i / (p_i.sum() + 1e-12)
+
+            js_divs = []
+            for sp in selected_probs:
+                m = 0.5 * (p_i + sp)
+                kl1 = np.sum(p_i * np.log((p_i + 1e-12) / (m + 1e-12)))
+                kl2 = np.sum(sp * np.log((sp + 1e-12) / (m + 1e-12)))
+                js = 0.5 * (kl1 + kl2)
+                js_divs.append(js)
+            diversity_score = np.mean(js_divs)
+
+            # Normalize and combine with ADAPTIVE ratio
+            max_cbald = cbald_scores[top_indices].max()
+            normalized_cbald = local_cbald_score / (max_cbald + 1e-12)
+            normalized_diversity = diversity_score
+
+            combined = (1 - current_ratio) * normalized_cbald + current_ratio * normalized_diversity
+
+            if combined > best_combined_score:
+                best_combined_score = combined
+                best_idx = i
+
+        if best_idx is not None:
+            selected_local.append(best_idx)
+            remaining.remove(best_idx)
+            p_sel = avg_probs[best_idx]
+            p_sel = p_sel / (p_sel.sum() + 1e-12)
+            selected_probs.append(p_sel)
+
+    # Map back to original indices
+    final_indices = [top_indices[i] for i in selected_local]
+
+    return final_indices, cbald_scores
+
+
+def cbald_diverse_nofilter_acquire(model, X_pool, batch_size, time_bins, config,
+                                    device='cpu', in_data_train=None, increment=10000,
+                                    costlist=None, budget=0, diversity_ratio=0.3, **kwargs):
+    """
+    CBALD-Diverse without pre-filtering: Score ALL samples.
+
+    Strategy:
+    - No variance-based pre-filtering (removes bias)
+    - Score all ~1961 samples with C-BALD (slower but more thorough)
+    - Select diverse subset from top candidates
+
+    This should find high-value samples missed by variance pre-filtering.
+    """
+
+    # Step 1: Compute C-BALD scores for ALL samples (no pre-filtering)
+    cbald_scores = cbald_score(model, X_pool, batch_size, time_bins, config,
+                               device, in_data_train, increment, budget, costlist, **kwargs)
+
+    # Step 2: Get top candidates (3x budget for diversity selection)
+    top_k = min(batch_size * 3, len(X_pool))
+    top_indices = np.argsort(cbald_scores)[-top_k:][::-1]
+
+    # If no diversity needed or pool too small, just return top samples
+    if diversity_ratio == 0 or len(top_indices) <= batch_size:
+        final_indices = top_indices[:batch_size].tolist()
+        return final_indices, cbald_scores
+
+    # Step 3: Get probability distributions for diversity computation
+    model.eval()
+    with torch.no_grad():
+        x_test_tensor = torch.FloatTensor(X_pool[top_indices]).to(device)
+        survival_outputs, _, ensemble_outputs = _make_prediction(model, x_test_tensor, time_bins, config)
+
+    K, N, C = ensemble_outputs.shape
+    probs = ensemble_to_pdf(ensemble_outputs, device)
+    avg_probs = probs.mean(dim=1).cpu().numpy()  # [N, C]
+
+    # Step 4: Greedy diversity selection (same as original CBALD-Diverse)
+    selected_local = []
+    selected_probs = []
+    remaining = list(range(len(top_indices)))
+
+    # Select first sample (highest C-BALD score)
+    selected_local.append(0)
+    remaining.remove(0)
+    p_sel = avg_probs[0]
+    p_sel = p_sel / (p_sel.sum() + 1e-12)
+    selected_probs.append(p_sel)
+
+    # Greedily select remaining samples
+    while len(selected_local) < batch_size and len(remaining) > 0:
+        best_idx = None
+        best_combined_score = -np.inf
+
+        for i in remaining:
+            # C-BALD score component
+            local_cbald_score = cbald_scores[top_indices[i]]
+
+            # Diversity component
+            p_i = avg_probs[i]
+            p_i = p_i / (p_i.sum() + 1e-12)
+
+            js_divs = []
+            for sp in selected_probs:
+                m = 0.5 * (p_i + sp)
+                kl1 = np.sum(p_i * np.log((p_i + 1e-12) / (m + 1e-12)))
+                kl2 = np.sum(sp * np.log((sp + 1e-12) / (m + 1e-12)))
+                js = 0.5 * (kl1 + kl2)
+                js_divs.append(js)
+            diversity_score = np.mean(js_divs)
+
+            # Normalize and combine
+            max_cbald = cbald_scores[top_indices].max()
+            normalized_cbald = local_cbald_score / (max_cbald + 1e-12)
+            normalized_diversity = diversity_score
+
+            combined = (1 - diversity_ratio) * normalized_cbald + diversity_ratio * normalized_diversity
+
+            if combined > best_combined_score:
+                best_combined_score = combined
+                best_idx = i
+
+        if best_idx is not None:
+            selected_local.append(best_idx)
+            remaining.remove(best_idx)
+            p_sel = avg_probs[best_idx]
+            p_sel = p_sel / (p_sel.sum() + 1e-12)
+            selected_probs.append(p_sel)
+
+    # Map back to original indices
+    final_indices = [top_indices[i] for i in selected_local]
+
+    return final_indices, cbald_scores
+
+
+def cbald_twostage_acquire(model, X_pool, batch_size, time_bins, config,
+                            device='cpu', in_data_train=None, increment=10000,
+                            costlist=None, budget=0, exploit_ratio=0.5, diversity_ratio=0.3, **kwargs):
+    """
+    CBALD Two-Stage: Pure exploitation then diverse exploration.
+
+    Strategy:
+    - Stage 1: Select top 50% samples by pure C-BALD score (best value)
+    - Stage 2: Select remaining 50% with diversity filtering
+
+    This guarantees we get the absolute highest-value samples first.
+
+    Args:
+        exploit_ratio: Fraction of budget for pure C-BALD (default 0.5 = 50%)
+        diversity_ratio: Diversity emphasis in stage 2 (default 0.3)
+    """
+
+    # Step 1: Compute C-BALD scores
+    cbald_scores = cbald_score(model, X_pool, batch_size, time_bins, config,
+                               device, in_data_train, increment, budget, costlist, **kwargs)
+
+    # Step 2: Determine stage sizes
+    stage1_size = int(batch_size * exploit_ratio)
+    stage2_size = batch_size - stage1_size
+
+    # Get top candidates for stage 2 selection (3x stage2 budget)
+    top_k = min(batch_size + stage2_size * 3, len(X_pool))
+    top_indices = np.argsort(cbald_scores)[-top_k:][::-1]
+
+    # STAGE 1: Pure C-BALD exploitation
+    stage1_indices = top_indices[:stage1_size].tolist()
+
+    if stage2_size == 0:
+        return stage1_indices, cbald_scores
+
+    # STAGE 2: Diverse exploration from remaining top candidates
+    stage2_candidates = top_indices[stage1_size:]
+
+    if len(stage2_candidates) <= stage2_size:
+        # Not enough candidates, just take all
+        final_indices = stage1_indices + stage2_candidates.tolist()
+        return final_indices, cbald_scores
+
+    # Get probability distributions for diversity computation
+    model.eval()
+    with torch.no_grad():
+        # Include stage1 samples for diversity computation
+        x_test_tensor = torch.FloatTensor(X_pool[top_indices]).to(device)
+        survival_outputs, _, ensemble_outputs = _make_prediction(model, x_test_tensor, time_bins, config)
+
+    K, N, C = ensemble_outputs.shape
+    probs = ensemble_to_pdf(ensemble_outputs, device)
+    avg_probs = probs.mean(dim=1).cpu().numpy()  # [N, C]
+
+    # Initialize with stage 1 selections
+    selected_local = list(range(stage1_size))
+    selected_probs = []
+    for i in range(stage1_size):
+        p_sel = avg_probs[i]
+        p_sel = p_sel / (p_sel.sum() + 1e-12)
+        selected_probs.append(p_sel)
+
+    # Stage 2 candidates (offset by stage1_size)
+    remaining = list(range(stage1_size, len(top_indices)))
+
+    # Greedy diverse selection for stage 2
+    while len(selected_local) < batch_size and len(remaining) > 0:
+        best_idx = None
+        best_combined_score = -np.inf
+
+        for i in remaining:
+            # C-BALD score component
+            local_cbald_score = cbald_scores[top_indices[i]]
+
+            # Diversity component
+            p_i = avg_probs[i]
+            p_i = p_i / (p_i.sum() + 1e-12)
+
+            js_divs = []
+            for sp in selected_probs:
+                m = 0.5 * (p_i + sp)
+                kl1 = np.sum(p_i * np.log((p_i + 1e-12) / (m + 1e-12)))
+                kl2 = np.sum(sp * np.log((sp + 1e-12) / (m + 1e-12)))
+                js = 0.5 * (kl1 + kl2)
+                js_divs.append(js)
+            diversity_score = np.mean(js_divs)
+
+            # Normalize and combine
+            max_cbald = cbald_scores[top_indices].max()
+            normalized_cbald = local_cbald_score / (max_cbald + 1e-12)
+            normalized_diversity = diversity_score
+
+            combined = (1 - diversity_ratio) * normalized_cbald + diversity_ratio * normalized_diversity
+
+            if combined > best_combined_score:
+                best_combined_score = combined
+                best_idx = i
+
+        if best_idx is not None:
+            selected_local.append(best_idx)
+            remaining.remove(best_idx)
+            p_sel = avg_probs[best_idx]
+            p_sel = p_sel / (p_sel.sum() + 1e-12)
+            selected_probs.append(p_sel)
+
+    # Map back to original indices
+    final_indices = [top_indices[i] for i in selected_local]
+
+    return final_indices, cbald_scores
+
+
 # =============================================================================
 # ENTROPY AND VARIANCE ACQUISITION
 # =============================================================================

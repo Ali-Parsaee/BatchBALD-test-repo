@@ -1,0 +1,40 @@
+======================================================================
+TESTING ALL CBALD-DIVERSE VARIANTS
+======================================================================
+
+GOAL: Make CBALD-Diverse as powerful as possible!
+
+Variants:
+  1. CBALD-Diverse (Original - baseline)
+  2. CBALD-Adaptive (Exploit 90% early → Explore 50% later)
+  3. CBALD-NoFilter (No pre-filtering bias)
+  4. CBALD-TwoStage (Pure C-BALD top 50% + diversity 50%)
+  5. C-BALD (Reference)
+
+Settings:
+  Trials: 5
+  Budget: 20
+
+Loading NACD dataset...
+   Dataset shape: (2402, 53)
+   Device: cpu
+
+Running 5 trials...
+
+  Trial 1/5
+  --------------------------------------------------------------------
+      Setting random seed: 100
+      Training SHARED base model for all methods...
+      Shared base model trained (26.7s)
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/test_cbald_variants.py", line 523, in <module>
+    main()
+  File "/home/user/BatchBALD-test-repo/test_cbald_variants.py", line 446, in main
+    trial_results = run_single_trial(trial_num, budget=20)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/test_cbald_variants.py", line 252, in run_single_trial
+    _, y_pred_survival = shared_model.predict(x_test, time_bins)
+                         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py", line 1965, in __getattr__
+    raise AttributeError(
+AttributeError: 'BayesLinMtlr' object has no attribute 'predict'
