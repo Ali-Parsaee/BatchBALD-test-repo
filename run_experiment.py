@@ -187,30 +187,37 @@ def concordance(y_pred, y_test, cens):
     return concordant / total_pairs
 
 
-def train_model(model, train_loader, config, epochs=100, patience=10):
-    """Train Bayesian MTLR model."""
+def train_model(model, X_train, y_train, e_train, time_bins, config, epochs=100, patience=20):
+    """Train Bayesian Linear MTLR model."""
+    train_df = pd.DataFrame(X_train)
+    train_df['time'] = y_train
+    train_df['event'] = e_train
+    x_formatted, y_formatted = reformat_survival(train_df, time_bins[1:])
+
+    train_dataset = TensorDataset(x_formatted, y_formatted)
+    train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
+
     optimizer = torch.optim.Adam(model.parameters(), lr=8e-5)
+
     best_loss = float('inf')
     patience_counter = 0
 
     for epoch in range(epochs):
         model.train()
-        train_loss = 0.0
-        for batch_x, batch_y in train_loader:
-            batch_x = batch_x.to(config.device)
-            batch_y = batch_y.to(config.device)
+        total_loss = 0.0
 
+        for xi, yi in train_loader:
+            xi, yi = xi.to(config.device), yi.to(config.device)
             optimizer.zero_grad()
-            loss, _, _, _ = model.sample_elbo(batch_x, batch_y, len(train_loader.dataset), see1=config.c1)
+            loss, _, _, _ = model.sample_elbo(xi, yi, len(X_train), see1=config.c1)
             loss.backward()
             optimizer.step()
+            total_loss += loss.item()
 
-            train_loss += loss.item()
+        avg_loss = total_loss / len(train_loader)
 
-        train_loss /= len(train_loader)
-
-        if train_loss < best_loss:
-            best_loss = train_loss
+        if avg_loss < best_loss:
+            best_loss = avg_loss
             patience_counter = 0
         else:
             patience_counter += 1
@@ -220,17 +227,45 @@ def train_model(model, train_loader, config, epochs=100, patience=10):
     return model
 
 
-def evaluate_model(model, x_test, y_test, e_test, time_bins, config):
+def evaluate_model(model, X_test, y_test, e_test, time_bins, config):
     """Evaluate model and return c-index."""
     model.eval()
     with torch.no_grad():
-        logits = model.forward(x_test, sample=True, n_samples=config.n_samples_test)
+        X_test_tensor = torch.FloatTensor(X_test).to(config.device)
+        logits = model.forward(X_test_tensor, sample=True, n_samples=config.n_samples_test)
         survival_probs = mtlr_survival(logits, with_sample=True)
         mean_survival = survival_probs.mean(dim=0).cpu().numpy()
 
     pred_times = expected_times_from_survival(mean_survival, time_bins)
     c_index = concordance(-pred_times, y_test, e_test)
     return c_index
+
+
+def deep_copy_model(model, config):
+    """Create a deep copy of a PyTorch model.
+
+    Note: BayesLinMtlr increments num_time_bins by 1 in __init__,
+    so we need to use num_time_bins - 1 to get the original value.
+    """
+    # Create new model with same architecture
+    # Important: num_time_bins is incremented in __init__, so subtract 1
+    original_num_time_bins = model.num_time_bins - 1
+
+    model_copy = BayesLinMtlr(
+        in_features=model.in_features,
+        num_time_bins=original_num_time_bins,
+        config=config
+    ).to(config.device)
+
+    # Copy state dict using strict loading
+    state_dict = copy.deepcopy(model.state_dict())
+    model_copy.load_state_dict(state_dict, strict=True)
+
+    # Set to eval mode like the base model
+    if not model.training:
+        model_copy.eval()
+
+    return model_copy
 
 
 # ==================== MAIN EXPERIMENT ====================
@@ -338,32 +373,19 @@ def run_experiment(methods, budget=20, increment=60, initial_samples=50,
             y_train, e_train, num_initial_samples=initial_samples, seed=seed
         )
 
-        # Prepare data
-        train_df = pd.DataFrame(X_train)
-        train_df['time'] = y_censored
-        train_df['event'] = e_censored
-        test_df = pd.DataFrame(X_test)
-        test_df['time'] = y_test
-        test_df['event'] = e_test
-
-        x_train, y_train_encoded = reformat_survival(train_df, time_bins[1:])
-        x_test, y_test_encoded = reformat_survival(test_df, time_bins[1:])
-
-        train_dataset = TensorDataset(x_train, y_train_encoded)
-        test_dataset = TensorDataset(x_test, y_test_encoded)
-        train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
-        test_loader = DataLoader(test_dataset, batch_size=config.batch_size, shuffle=False)
-
         # Train shared base model
         print(f"      Training shared base model...")
         shared_model = BayesLinMtlr(
             in_features=X_train.shape[1],
-            num_time_bins=len(time_bins),
+            num_time_bins=len(time_bins) - 1,
             config=config
         )
-        shared_model = train_model(shared_model, train_loader, config)
+        shared_model = train_model(
+            shared_model, X_train, y_censored, e_censored, time_bins, config,
+            epochs=100, patience=20
+        )
 
-        initial_cindex = evaluate_model(shared_model, x_test, y_test, e_test, time_bins, config)
+        initial_cindex = evaluate_model(shared_model, X_test, y_test, e_test, time_bins, config)
         print(f"      Initial C-index: {initial_cindex:.4f}")
 
         # Setup for acquisition
@@ -371,13 +393,10 @@ def run_experiment(methods, budget=20, increment=60, initial_samples=50,
         y_original = y_train[censored_indices]
         e_original = e_train[censored_indices]
 
-        model_data = {
-            'x_train': x_train,
-            'y_train': y_train_encoded,
-            'x_test': x_test,
-            'y_test': y_test_encoded,
-            'time_bins': time_bins
-        }
+        # Prepare in_data_train as DataFrame (required by acquisition functions)
+        censored_df = pd.DataFrame(X_censored)
+        censored_df['time'] = y_censored[censored_indices]
+        censored_df['event'] = e_censored[censored_indices]
 
         costlist = np.ones(len(X_censored))
 
@@ -387,8 +406,8 @@ def run_experiment(methods, budget=20, increment=60, initial_samples=50,
 
             print(f"      [{acq_name}] Running acquisition...")
 
-            # Clone model
-            model = copy.deepcopy(shared_model)
+            # Clone model using proper PyTorch model copying
+            model = deep_copy_model(shared_model, config)
 
             # Run acquisition
             start_time = time.time()
@@ -399,38 +418,37 @@ def run_experiment(methods, budget=20, increment=60, initial_samples=50,
                 time_bins=time_bins,
                 config=config,
                 device=config.device,
-                in_data_train=model_data,
+                in_data_train=censored_df,
                 increment=increment,
                 costlist=costlist,
                 budget=budget,
                 **acq_params
             )
 
-            # Reveal oracle labels
+            # Reveal oracle labels (INCREMENTAL - up to next time window)
             revealed_indices = censored_indices[pool_indices]
             y_updated = np.copy(y_censored)
             e_updated = np.copy(e_censored)
-            y_updated[revealed_indices] = y_original[pool_indices]
-            e_updated[revealed_indices] = e_original[pool_indices]
+
+            # Incremental revelation: reveal up to (current_time + increment) or true time
+            for idx in revealed_indices:
+                y_updated[idx] = min(y_train[idx], y_updated[idx] + increment)
+                if y_updated[idx] >= y_train[idx]:
+                    e_updated[idx] = e_train[idx]
 
             # Retrain
-            train_df_updated = pd.DataFrame(X_train)
-            train_df_updated['time'] = y_updated
-            train_df_updated['event'] = e_updated
-            x_train_updated, y_train_updated = reformat_survival(train_df_updated, time_bins[1:])
-
-            train_dataset_updated = TensorDataset(x_train_updated, y_train_updated)
-            train_loader_updated = DataLoader(train_dataset_updated, batch_size=config.batch_size, shuffle=True)
-
             model = BayesLinMtlr(
                 in_features=X_train.shape[1],
-                num_time_bins=len(time_bins),
+                num_time_bins=len(time_bins) - 1,
                 config=config
             )
-            model = train_model(model, train_loader_updated, config)
+            model = train_model(
+                model, X_train, y_updated, e_updated, time_bins, config,
+                epochs=100, patience=20
+            )
 
             # Evaluate
-            final_cindex = evaluate_model(model, x_test, y_test, e_test, time_bins, config)
+            final_cindex = evaluate_model(model, X_test, y_test, e_test, time_bins, config)
             improvement = final_cindex - initial_cindex
             elapsed = time.time() - start_time
 

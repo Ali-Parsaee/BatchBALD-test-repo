@@ -1,0 +1,266 @@
+======================================================================
+TESTING ALL CBALD-DIVERSE VARIANTS
+======================================================================
+
+GOAL: Make CBALD-Diverse as powerful as possible!
+
+Variants:
+  1. CBALD-Diverse (Original - baseline: +0.0180)
+  2. CBALD-Adaptive (Exploit 90% early → Explore 50% later)
+  3. CBALD-NoFilter (No pre-filtering bias)
+  4. CBALD-TwoStage (Pure C-BALD top 50% + diversity 50%)
+  5. C-BALD (Reference: +0.0173)
+
+Settings:
+  Trials: 5
+  Budget: 20
+  Pre-filter size: 500
+  Increment: 60
+
+Loading NACD dataset...
+   Dataset shape: (2402, 50)
+   Device: cpu
+
+Running 5 trials...
+
+  Trial 1/5
+  --------------------------------------------------------------------
+
+      Setting random seed: 100
+      Training SHARED base model for all methods...
+      Shared base model trained (77.7s)
+      Shared initial C-index: 0.6682
+      All methods will start from this SAME model!
+
+      [CBALD-Diverse] Starting acquisition...
+      [CBALD-Diverse] Initial C-index: 0.6682 (verified same as base)
+      [CBALD-Diverse] Running acquisition (budget=20)... done (0.5s, acquired 20 samples)
+      [CBALD-Diverse] Retraining model... done (73.1s)
+      [CBALD-Diverse] Final C-index: 0.6848 (Δ=+0.0166) [Total: 73.6s]
+
+      [CBALD-Adaptive] Starting acquisition...
+      [CBALD-Adaptive] Initial C-index: 0.6682 (verified same as base)
+      [CBALD-Adaptive] Running acquisition (budget=20)... done (0.4s, acquired 20 samples)
+      [CBALD-Adaptive] Retraining model... done (75.4s)
+      [CBALD-Adaptive] Final C-index: 0.6830 (Δ=+0.0148) [Total: 75.9s]
+
+      [CBALD-NoFilter] Starting acquisition...
+      [CBALD-NoFilter] Initial C-index: 0.6682 (verified same as base)
+      [CBALD-NoFilter] Running acquisition (budget=20)... done (0.4s, acquired 20 samples)
+      [CBALD-NoFilter] Retraining model... done (73.4s)
+      [CBALD-NoFilter] Final C-index: 0.6848 (Δ=+0.0166) [Total: 73.9s]
+
+      [CBALD-TwoStage] Starting acquisition...
+      [CBALD-TwoStage] Initial C-index: 0.6682 (verified same as base)
+      [CBALD-TwoStage] Running acquisition (budget=20)... done (0.3s, acquired 20 samples)
+      [CBALD-TwoStage] Retraining model... done (73.5s)
+      [CBALD-TwoStage] Final C-index: 0.6848 (Δ=+0.0166) [Total: 73.9s]
+
+      [C-BALD] Starting acquisition...
+      [C-BALD] Initial C-index: 0.6682 (verified same as base)
+      [C-BALD] Running acquisition (budget=20)... cbald_censored_regression score:  [1.9825572 2.500573  1.1348815 ... 1.2829225 2.2632315 0.5881944]
+sorted_indices:  [1238  708 1387 ...  300 1956  782]
+done (0.2s, acquired 20 samples)
+      [C-BALD] Retraining model... done (75.9s)
+      [C-BALD] Final C-index: 0.6825 (Δ=+0.0143) [Total: 76.2s]
+
+  Trial 1 completed
+
+  Trial 2/5
+  --------------------------------------------------------------------
+
+      Setting random seed: 101
+      Training SHARED base model for all methods...
+      Shared base model trained (76.0s)
+      Shared initial C-index: 0.6643
+      All methods will start from this SAME model!
+
+      [CBALD-Diverse] Starting acquisition...
+      [CBALD-Diverse] Initial C-index: 0.6643 (verified same as base)
+      [CBALD-Diverse] Running acquisition (budget=20)... done (0.5s, acquired 20 samples)
+      [CBALD-Diverse] Retraining model... done (75.3s)
+      [CBALD-Diverse] Final C-index: 0.6774 (Δ=+0.0131) [Total: 75.9s]
+
+      [CBALD-Adaptive] Starting acquisition...
+      [CBALD-Adaptive] Initial C-index: 0.6643 (verified same as base)
+      [CBALD-Adaptive] Running acquisition (budget=20)... done (0.4s, acquired 20 samples)
+      [CBALD-Adaptive] Retraining model... done (72.6s)
+      [CBALD-Adaptive] Final C-index: 0.6714 (Δ=+0.0071) [Total: 73.1s]
+
+      [CBALD-NoFilter] Starting acquisition...
+      [CBALD-NoFilter] Initial C-index: 0.6643 (verified same as base)
+      [CBALD-NoFilter] Running acquisition (budget=20)... done (0.4s, acquired 20 samples)
+      [CBALD-NoFilter] Retraining model... done (73.5s)
+      [CBALD-NoFilter] Final C-index: 0.6774 (Δ=+0.0131) [Total: 73.9s]
+
+      [CBALD-TwoStage] Starting acquisition...
+      [CBALD-TwoStage] Initial C-index: 0.6643 (verified same as base)
+      [CBALD-TwoStage] Running acquisition (budget=20)... done (0.3s, acquired 20 samples)
+      [CBALD-TwoStage] Retraining model... done (74.4s)
+      [CBALD-TwoStage] Final C-index: 0.6774 (Δ=+0.0131) [Total: 74.8s]
+
+      [C-BALD] Starting acquisition...
+      [C-BALD] Initial C-index: 0.6643 (verified same as base)
+      [C-BALD] Running acquisition (budget=20)... cbald_censored_regression score:  [1.7734445 1.5607971 1.1733128 ... 2.2258902 2.9957423 1.3398659]
+sorted_indices:  [ 657  698  962 ...  924  287 1956]
+done (0.2s, acquired 20 samples)
+      [C-BALD] Retraining model... done (75.7s)
+      [C-BALD] Final C-index: 0.6766 (Δ=+0.0123) [Total: 75.9s]
+
+  Trial 2 completed
+
+  Trial 3/5
+  --------------------------------------------------------------------
+
+      Setting random seed: 102
+      Training SHARED base model for all methods...
+      Shared base model trained (75.3s)
+      Shared initial C-index: 0.6633
+      All methods will start from this SAME model!
+
+      [CBALD-Diverse] Starting acquisition...
+      [CBALD-Diverse] Initial C-index: 0.6633 (verified same as base)
+      [CBALD-Diverse] Running acquisition (budget=20)... done (0.4s, acquired 20 samples)
+      [CBALD-Diverse] Retraining model... done (75.8s)
+      [CBALD-Diverse] Final C-index: 0.6761 (Δ=+0.0129) [Total: 76.3s]
+
+      [CBALD-Adaptive] Starting acquisition...
+      [CBALD-Adaptive] Initial C-index: 0.6633 (verified same as base)
+      [CBALD-Adaptive] Running acquisition (budget=20)... done (0.5s, acquired 20 samples)
+      [CBALD-Adaptive] Retraining model... done (75.6s)
+      [CBALD-Adaptive] Final C-index: 0.6744 (Δ=+0.0112) [Total: 76.2s]
+
+      [CBALD-NoFilter] Starting acquisition...
+      [CBALD-NoFilter] Initial C-index: 0.6633 (verified same as base)
+      [CBALD-NoFilter] Running acquisition (budget=20)... done (0.5s, acquired 20 samples)
+      [CBALD-NoFilter] Retraining model... done (73.8s)
+      [CBALD-NoFilter] Final C-index: 0.6761 (Δ=+0.0129) [Total: 74.4s]
+
+      [CBALD-TwoStage] Starting acquisition...
+      [CBALD-TwoStage] Initial C-index: 0.6633 (verified same as base)
+      [CBALD-TwoStage] Running acquisition (budget=20)... done (0.3s, acquired 20 samples)
+      [CBALD-TwoStage] Retraining model... done (75.1s)
+      [CBALD-TwoStage] Final C-index: 0.6761 (Δ=+0.0129) [Total: 75.5s]
+
+      [C-BALD] Starting acquisition...
+      [C-BALD] Initial C-index: 0.6633 (verified same as base)
+      [C-BALD] Running acquisition (budget=20)... cbald_censored_regression score:  [1.6174504 1.5356138 1.1393728 ... 1.4871598 2.6205623 1.1522688]
+sorted_indices:  [1241  657  871 ...  296 1956 1218]
+done (0.2s, acquired 20 samples)
+      [C-BALD] Retraining model... done (75.9s)
+      [C-BALD] Final C-index: 0.6773 (Δ=+0.0140) [Total: 76.1s]
+
+  Trial 3 completed
+
+  Trial 4/5
+  --------------------------------------------------------------------
+
+      Setting random seed: 103
+      Training SHARED base model for all methods...
+      Shared base model trained (79.9s)
+      Shared initial C-index: 0.6825
+      All methods will start from this SAME model!
+
+      [CBALD-Diverse] Starting acquisition...
+      [CBALD-Diverse] Initial C-index: 0.6825 (verified same as base)
+      [CBALD-Diverse] Running acquisition (budget=20)... done (0.5s, acquired 20 samples)
+      [CBALD-Diverse] Retraining model... done (76.8s)
+      [CBALD-Diverse] Final C-index: 0.7110 (Δ=+0.0285) [Total: 77.3s]
+
+      [CBALD-Adaptive] Starting acquisition...
+      [CBALD-Adaptive] Initial C-index: 0.6825 (verified same as base)
+      [CBALD-Adaptive] Running acquisition (budget=20)... done (0.6s, acquired 20 samples)
+      [CBALD-Adaptive] Retraining model... done (75.8s)
+      [CBALD-Adaptive] Final C-index: 0.7102 (Δ=+0.0276) [Total: 76.4s]
+
+      [CBALD-NoFilter] Starting acquisition...
+      [CBALD-NoFilter] Initial C-index: 0.6825 (verified same as base)
+      [CBALD-NoFilter] Running acquisition (budget=20)... done (0.4s, acquired 20 samples)
+      [CBALD-NoFilter] Retraining model... done (76.0s)
+      [CBALD-NoFilter] Final C-index: 0.7110 (Δ=+0.0285) [Total: 76.5s]
+
+      [CBALD-TwoStage] Starting acquisition...
+      [CBALD-TwoStage] Initial C-index: 0.6825 (verified same as base)
+      [CBALD-TwoStage] Running acquisition (budget=20)... done (0.4s, acquired 20 samples)
+      [CBALD-TwoStage] Retraining model... done (76.0s)
+      [CBALD-TwoStage] Final C-index: 0.7103 (Δ=+0.0278) [Total: 76.4s]
+
+      [C-BALD] Starting acquisition...
+      [C-BALD] Initial C-index: 0.6825 (verified same as base)
+      [C-BALD] Running acquisition (budget=20)... cbald_censored_regression score:  [1.5681067 1.2812654 1.0306696 ... 1.756679  2.5518785 1.234153 ]
+sorted_indices:  [1235  969  881 ...  203 1956  778]
+done (0.2s, acquired 20 samples)
+      [C-BALD] Retraining model... done (75.5s)
+      [C-BALD] Final C-index: 0.7102 (Δ=+0.0277) [Total: 75.8s]
+
+  Trial 4 completed
+
+  Trial 5/5
+  --------------------------------------------------------------------
+
+      Setting random seed: 104
+      Training SHARED base model for all methods...
+      Shared base model trained (76.0s)
+      Shared initial C-index: 0.6824
+      All methods will start from this SAME model!
+
+      [CBALD-Diverse] Starting acquisition...
+      [CBALD-Diverse] Initial C-index: 0.6824 (verified same as base)
+      [CBALD-Diverse] Running acquisition (budget=20)... done (0.5s, acquired 20 samples)
+      [CBALD-Diverse] Retraining model... done (73.7s)
+      [CBALD-Diverse] Final C-index: 0.7017 (Δ=+0.0192) [Total: 74.3s]
+
+      [CBALD-Adaptive] Starting acquisition...
+      [CBALD-Adaptive] Initial C-index: 0.6824 (verified same as base)
+      [CBALD-Adaptive] Running acquisition (budget=20)... done (0.6s, acquired 20 samples)
+      [CBALD-Adaptive] Retraining model... done (77.2s)
+      [CBALD-Adaptive] Final C-index: 0.7017 (Δ=+0.0192) [Total: 77.8s]
+
+      [CBALD-NoFilter] Starting acquisition...
+      [CBALD-NoFilter] Initial C-index: 0.6824 (verified same as base)
+      [CBALD-NoFilter] Running acquisition (budget=20)... done (0.5s, acquired 20 samples)
+      [CBALD-NoFilter] Retraining model... done (75.1s)
+      [CBALD-NoFilter] Final C-index: 0.7017 (Δ=+0.0192) [Total: 75.6s]
+
+      [CBALD-TwoStage] Starting acquisition...
+      [CBALD-TwoStage] Initial C-index: 0.6824 (verified same as base)
+      [CBALD-TwoStage] Running acquisition (budget=20)... done (0.3s, acquired 20 samples)
+      [CBALD-TwoStage] Retraining model... done (73.8s)
+      [CBALD-TwoStage] Final C-index: 0.7017 (Δ=+0.0192) [Total: 74.2s]
+
+      [C-BALD] Starting acquisition...
+      [C-BALD] Initial C-index: 0.6824 (verified same as base)
+      [C-BALD] Running acquisition (budget=20)... cbald_censored_regression score:  [1.892722   2.058355   0.97691864 ... 1.5150985  3.3243427  3.714624  ]
+sorted_indices:  [1392 1266 1295 ...  293 1213 1956]
+done (0.2s, acquired 20 samples)
+      [C-BALD] Retraining model... done (71.4s)
+      [C-BALD] Final C-index: 0.7007 (Δ=+0.0182) [Total: 71.7s]
+
+  Trial 5 completed
+
+
+======================================================================
+RESULTS
+======================================================================
+
+Method Rankings (by mean IMPROVEMENT - the fair metric!):
+----------------------------------------------------------------------
+1. CBALD-Diverse                       +0.0180 ± 0.0064 🏆
+2. CBALD-NoFilter                      +0.0180 ± 0.0064 🥈
+3. CBALD-TwoStage                      +0.0179 ± 0.0061 🥉
+4. C-BALD                              +0.0173 ± 0.0062 
+5. CBALD-Adaptive                      +0.0160 ± 0.0079 
+
+Initial C-index (should be SAME for all methods):
+----------------------------------------------------------------------
+CBALD-Diverse                       0.6722 ± 0.0096
+CBALD-Adaptive                      0.6722 ± 0.0096
+CBALD-NoFilter                      0.6722 ± 0.0096
+CBALD-TwoStage                      0.6722 ± 0.0096
+C-BALD                              0.6722 ± 0.0096
+
+Statistical Comparisons (Paired t-tests on improvement):
+----------------------------------------------------------------------
+
+
+CBALD-Diverse test complete! Did it beat C-BALD?
