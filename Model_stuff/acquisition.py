@@ -1567,8 +1567,8 @@ def c_batchbald_acquire(model, X_pool, batch_size, time_bins, config,
         if (iter_num + 1) % 5 == 0:
             print(f"[C-BatchBALD] Selected {iter_num + 1}/{batch_size} samples...")
 
-    # Map back to original indices
-    final_indices = [top_cbald_indices[i] for i in selected_indices]
+    # Map back to original indices (ensure they're Python ints, not numpy ints)
+    final_indices = [int(top_cbald_indices[i]) for i in selected_indices]
 
     print(f"[C-BatchBALD] Selected {len(final_indices)} samples using joint entropy diversity")
 
