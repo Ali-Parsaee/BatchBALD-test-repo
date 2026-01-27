@@ -802,6 +802,199 @@ def batchbald_acquire_budget(model, X_pool, batch_size, time_bins, config,
 
 
 # =============================================================================
+# BATCHBALD-C: BatchBALD with C-BALD Death Probability Weighting
+# =============================================================================
+
+def batchbald_c_acquire_budget(model, X_pool, batch_size, time_bins, config,
+                                num_samples=60000, device='cpu', min_samples=400,
+                                in_data_train=None, increment=10000, costlist=None,
+                                budget=0, censored_indices=None, out_of_window_downweight=True,
+                                temperature=1.25, inwindow_gamma=0.3, use_binary_mi=None,
+                                use_diversity_filter=True, diversity_weight=0.15, density_weight=0.0,
+                                death_prob_weight=0.7):
+    """
+    BatchBALD-C: Enhanced BatchBALD with C-BALD's death probability weighting.
+
+    Combines:
+    - BatchBALD's diversity mechanism (joint entropy)
+    - C-BALD's information value weighting (death probability in reveal window)
+
+    This should beat both:
+    - C-BALD: by adding diversity (reducing redundancy)
+    - BatchBALD: by adding information value (prioritizing high-value samples)
+
+    Args:
+        death_prob_weight: Weight for death probability component (0-1)
+                          0 = pure BatchBALD, 1 = pure death probability weighting
+                          Default 0.7 balances both strategies
+    """
+    assert budget > 0, "Budget must be greater than 0"
+
+    model.eval()
+    with torch.no_grad():
+        x_test_tensor = torch.FloatTensor(X_pool).to(device)
+        _, _, ensemble_outputs = _make_prediction(model, x_test_tensor, time_bins, config)
+
+    # Convert survival to PDF
+    ensemble_outputs = ensemble_outputs.permute(1, 0, 2)
+    modified_tensor = ensemble_outputs[:, :, 1:]
+    zero_to_append = torch.zeros((ensemble_outputs.shape[0], ensemble_outputs.shape[1], 1),
+                                  dtype=torch.float32).to(device)
+    modified_tensor = torch.cat((modified_tensor, zero_to_append), dim=2)
+    probs_N_K_C = ensemble_outputs - modified_tensor
+
+    time_bins_np = np.array(time_bins) if not isinstance(time_bins, np.ndarray) else time_bins
+    temp_bins = np.array([0] + list(time_bins_np)[:-1])
+    censoredtime = np.array(in_data_train['time'])
+
+    censoredbin = _map_indices(censoredtime, temp_bins)
+    binincrements = _map_indices(censoredtime + increment, temp_bins)
+
+    start_bins = censoredbin
+    end_bins = binincrements
+    window_bins = np.maximum(end_bins - start_bins + 1, 1)
+    avg_window_bins = float(np.mean(window_bins))
+
+    logits_N_K_C = _fix_survival_timebins_increment(probs_N_K_C, time_bins, in_data_train, increment)
+    N, K, C = logits_N_K_C.shape
+    max_time = time_bins_np[-1]
+
+    # Censoring-time-aware weighting
+    if out_of_window_downweight:
+        for i in range(N):
+            unknown_bin_idx = int(min(binincrements[i] + 1, C - 1))
+            censor_ratio = float(censoredtime[i]) / float(max_time)
+            censor_weight = np.clip(np.sqrt(censor_ratio), 0.2, 1.0)
+            logits_N_K_C[i, :, unknown_bin_idx] *= censor_weight
+            row_sums = torch.clamp(logits_N_K_C[i, :, :].sum(dim=1, keepdim=True), min=1e-12)
+            logits_N_K_C[i, :, :] /= row_sums
+
+    # In-window emphasis
+    if inwindow_gamma is not None and inwindow_gamma > 0:
+        for i in range(N):
+            s = max(0, min(int(start_bins[i]), C - 1))
+            t = max(0, min(int(end_bins[i]), C - 1))
+            if t < s: s, t = t, s
+            if t == s: continue
+
+            length = float(max(t - s, 1))
+            w = torch.ones(C, dtype=logits_N_K_C.dtype, device=logits_N_K_C.device)
+            for b in range(s, t + 1):
+                rel_pos = float(b - s) / length
+                w[b] = 1.0 + inwindow_gamma * (1.0 - rel_pos)
+
+            logits_N_K_C[i, :, :] *= w.unsqueeze(0)
+            logits_N_K_C[i, :, :] /= logits_N_K_C[i, :, :].sum(dim=1, keepdim=True)
+
+    # Temperature smoothing
+    if temperature is not None and temperature > 1.0:
+        logits_N_K_C = torch.clamp(logits_N_K_C, min=1e-12)
+        logits_N_K_C = logits_N_K_C ** (1.0 / temperature)
+        logits_N_K_C /= logits_N_K_C.sum(dim=2, keepdim=True)
+
+    # === C-BALD STYLE DEATH PROBABILITY WEIGHTING (NEW APPROACH!) ===
+    # Weight probabilities by death probability BEFORE BatchBALD sees them
+    # This makes BatchBALD naturally prioritize high-information-value samples
+
+    # Compute death probability for each sample
+    avg_probs = logits_N_K_C.mean(dim=1)  # [N, C]
+    death_prob_samples = torch.zeros(N, device=device)
+
+    for i in range(N):
+        s = int(start_bins[i])
+        e = min(int(end_bins[i]) + 1, C)
+        death_prob_samples[i] = avg_probs[i, s:e].sum()
+
+    # Boost probabilities in the reveal window by death probability
+    # Higher death prob → more weight on that window → higher MI → more likely to be selected
+    for i in range(N):
+        s = int(start_bins[i])
+        e = min(int(end_bins[i]) + 1, C)
+
+        # C-BALD style weighting: (0.5 + 0.5 * death_prob)
+        weight = (0.5 + 0.5 * death_prob_samples[i].item()) ** death_prob_weight
+
+        # Apply weight to the reveal window
+        logits_N_K_C[i, :, s:e] *= weight
+
+        # Renormalize
+        row_sums = logits_N_K_C[i, :, :].sum(dim=1, keepdim=True)
+        logits_N_K_C[i, :, :] /= torch.clamp(row_sums, min=1e-12)
+
+    # Auto binary MI
+    if use_binary_mi is None:
+        use_binary_mi = avg_window_bins <= 3
+
+    if use_binary_mi:
+        p_window_list = []
+        for i in range(N):
+            s = max(0, min(int(start_bins[i]), C - 1))
+            t = max(0, min(int(end_bins[i]), C - 1))
+            if t < s: s, t = t, s
+            p_w = logits_N_K_C[i, :, s:(t + 1)].sum(dim=1) if t != s else logits_N_K_C[i, :, s]
+            p_window_list.append(p_w)
+
+        p_window = torch.stack(p_window_list, dim=0)
+        p_unknown = 1.0 - p_window
+        two_class = torch.stack([p_window, p_unknown], dim=2)
+        two_class = torch.clamp(two_class, 1e-12, 1.0)
+        two_class /= two_class.sum(dim=2, keepdim=True)
+        bb_logits = torch.log(two_class)
+    else:
+        bb_logits = torch.log(torch.clamp(logits_N_K_C, min=1e-12))
+
+    bb_logits[bb_logits == float('-inf')] = -10
+
+    # === BATCHBALD SELECTION (probabilities already weighted by death probability!) ===
+    # Since we weighted the logits above, BatchBALD will naturally select high-info-value samples
+
+    # Handle censored-only selection
+    if censored_indices is not None and len(censored_indices) > 0:
+        censored_indices = np.array(censored_indices, dtype=int)
+        logits_subset = bb_logits[torch.as_tensor(censored_indices, dtype=torch.long, device=device)]
+
+        actual_num_samples = max(min_samples, num_samples)
+        request_size = min(batch_size, len(censored_indices))
+
+        candidate_batch = batchbald.get_batchbald_batch(
+            logits_subset, request_size, actual_num_samples, dtype=torch.double, device=device
+        )
+
+        sub_indices = np.asarray(candidate_batch.indices, dtype=int)
+        final_indices = censored_indices[sub_indices].tolist()
+    else:
+        actual_num_samples = max(min_samples, num_samples)
+        request_size = min(batch_size, N)
+
+        candidate_batch = batchbald.get_batchbald_batch(
+            bb_logits, request_size, actual_num_samples, dtype=torch.double, device=device
+        )
+        final_indices = list(candidate_batch.indices)
+
+    # Apply budget constraint
+    if costlist is not None:
+        costs = costlist.values.flatten() if hasattr(costlist, 'values') else np.asarray(costlist).flatten()
+        batchbald_scores = np.asarray(candidate_batch.scores, dtype=float)
+        safe_costs = np.maximum(costs[final_indices[:batch_size]], 1e-8)
+        score_cost_ratio = batchbald_scores[:batch_size] / safe_costs
+        order = np.argsort(score_cost_ratio)[::-1]
+
+        selected_indices = []
+        current_cost = 0.0
+        for j in order:
+            idx = int(final_indices[j])
+            c = float(costs[idx])
+            if current_cost + c <= budget:
+                selected_indices.append(idx)
+                current_cost += c
+                if len(selected_indices) >= batch_size:
+                    break
+        return selected_indices
+
+    return final_indices[:batch_size]
+
+
+# =============================================================================
 # RANDOM ACQUISITION
 # =============================================================================
 
