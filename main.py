@@ -25,6 +25,9 @@ from src.acquisition.batchbald import SurvivalBatchBALD
 from src.acquisition.improved_batchbald import ImprovedBatchBALD
 from src.acquisition.weighted_batchbald import WeightedBatchBALD
 from src.acquisition.cbald_true import TrueCBALD
+from src.acquisition.cbald_diverse import (
+    CBaldDiverse, CBaldDiverseAdaptive, CBaldDiverseNoFilter, CBaldTwoStage, OldCBALD
+)
 from src.acquisition.entropy import EntropyAcquisition
 from src.acquisition.variance import VarianceAcquisition
 from src.evaluation.metrics import concordance_index, brier_score
@@ -152,8 +155,9 @@ def run_single_experiment(
                 batch_size=batch_size,
                 current_event=artificial_event
             )
-    elif acquisition_name == 'cbald_true':
-        # True C-BALD uses predictions directly
+    elif acquisition_name in ['cbald_true', 'cbald_diverse', 'cbald_diverse_adaptive',
+                               'cbald_diverse_nofilter', 'cbald_twostage', 'old_cbald']:
+        # New C-BALD variants use predictions directly
         selected_indices = acq_func.select_batch(
             train_preds,
             artificial_time,
@@ -366,7 +370,9 @@ Examples:
     # Acquisition function selection
     parser.add_argument('--acquisition', type=str, default='all',
                         choices=['all', 'batchbald', 'improved_batchbald', 'weighted_batchbald',
-                                'cbald_true', 'entropy', 'variance'],
+                                'cbald_true', 'cbald_diverse', 'cbald_diverse_adaptive',
+                                'cbald_diverse_nofilter', 'cbald_twostage', 'old_cbald',
+                                'entropy', 'variance'],
                         help='Acquisition function to use (default: all)')
 
     # Experiment settings
@@ -430,6 +436,11 @@ Examples:
             'improved_batchbald': ImprovedBatchBALD(probe_depth=args.probe_depth),
             'weighted_batchbald': WeightedBatchBALD(probe_depth=args.probe_depth),
             'cbald_true': TrueCBALD(probe_depth=args.probe_depth),
+            'cbald_diverse': CBaldDiverse(probe_depth=args.probe_depth),
+            'cbald_diverse_adaptive': CBaldDiverseAdaptive(probe_depth=args.probe_depth),
+            'cbald_diverse_nofilter': CBaldDiverseNoFilter(probe_depth=args.probe_depth),
+            'cbald_twostage': CBaldTwoStage(probe_depth=args.probe_depth),
+            'old_cbald': OldCBALD(probe_depth=args.probe_depth),
             'entropy': EntropyAcquisition(),
             'variance': VarianceAcquisition()
         }
@@ -442,6 +453,16 @@ Examples:
             acquisition_functions['weighted_batchbald'] = WeightedBatchBALD(probe_depth=args.probe_depth)
         elif args.acquisition == 'cbald_true':
             acquisition_functions['cbald_true'] = TrueCBALD(probe_depth=args.probe_depth)
+        elif args.acquisition == 'cbald_diverse':
+            acquisition_functions['cbald_diverse'] = CBaldDiverse(probe_depth=args.probe_depth)
+        elif args.acquisition == 'cbald_diverse_adaptive':
+            acquisition_functions['cbald_diverse_adaptive'] = CBaldDiverseAdaptive(probe_depth=args.probe_depth)
+        elif args.acquisition == 'cbald_diverse_nofilter':
+            acquisition_functions['cbald_diverse_nofilter'] = CBaldDiverseNoFilter(probe_depth=args.probe_depth)
+        elif args.acquisition == 'cbald_twostage':
+            acquisition_functions['cbald_twostage'] = CBaldTwoStage(probe_depth=args.probe_depth)
+        elif args.acquisition == 'old_cbald':
+            acquisition_functions['old_cbald'] = OldCBALD(probe_depth=args.probe_depth)
         elif args.acquisition == 'entropy':
             acquisition_functions['entropy'] = EntropyAcquisition()
         elif args.acquisition == 'variance':
