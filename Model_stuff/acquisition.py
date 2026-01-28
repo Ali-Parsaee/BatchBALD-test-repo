@@ -1603,6 +1603,158 @@ def c_batchbald_acquire(model, X_pool, batch_size, time_bins, config,
     return final_indices
 
 
+def c_batchbald_v2_acquire(model, X_pool, batch_size, time_bins, config,
+                           device='cpu', in_data_train=None, increment=10000,
+                           costlist=None, budget=0, cbald_weight=0.8, **kwargs):
+    """
+    C-BatchBALD V2: FIXED VERSION - Uses C-BALD scores directly (not BALD).
+
+    KEY INSIGHT: The original C-BatchBALD threw away C-BALD's death_prob weighting
+    by re-computing BALD scores. This version uses C-BALD scores throughout!
+
+    Strategy:
+    1. Compute C-BALD scores for all samples (time_variance * (0.5 + 0.5 * death_prob))
+    2. Adaptive pre-filter: Top 10x budget (not fixed 500)
+    3. Greedy selection: 80% C-BALD + 20% diversity (not 60/40)
+    4. Uses C-BALD scores in selection (preserves death_prob!)
+
+    Args:
+        cbald_weight: Weight for C-BALD vs diversity (default: 0.8)
+    """
+    from model import mtlr_survival
+
+    print(f"[C-BatchBALD-V2] Step 1: Computing C-BALD scores...")
+
+    # Step 1: Compute C-BALD scores for all samples
+    cbald_scores = cbald_score(model, X_pool, batch_size, time_bins, config,
+                               device, in_data_train, increment, budget, costlist, **kwargs)
+
+    # Step 2: Adaptive pre-filter (10x budget for good diversity pool)
+    prefilter_k = min(batch_size * 10, len(X_pool))
+    top_cbald_indices = np.argsort(cbald_scores)[-prefilter_k:][::-1]
+    X_filtered = X_pool[top_cbald_indices]
+    cbald_filtered = cbald_scores[top_cbald_indices]
+
+    print(f"[C-BatchBALD-V2] Step 2: Pre-filtered {len(X_pool)} → {len(X_filtered)} samples (10x budget)")
+    print(f"[C-BatchBALD-V2] Step 3: Getting ensemble predictions for diversity...")
+
+    # Step 3: Get ensemble predictions for diversity computation
+    model.eval()
+    with torch.no_grad():
+        x_tensor = torch.FloatTensor(X_filtered).to(device)
+        K = min(50, config.n_samples_test)
+
+        # Collect survival probabilities
+        all_survival_probs = []
+        for _ in range(K):
+            logits = model.forward(x_tensor, sample=True, n_samples=1)
+            logits_2d = logits.squeeze(0)
+            survival_probs = mtlr_survival(logits_2d, with_sample=False)
+            all_survival_probs.append(survival_probs.cpu().numpy())
+
+        ensemble_survival = np.array(all_survival_probs)  # [K, N, C]
+
+    K, N, C = ensemble_survival.shape
+    print(f"[C-BatchBALD-V2] Ensemble shape: K={K} models, N={N} samples, C={C} time bins")
+
+    # Normalize C-BALD scores for combination
+    cbald_min, cbald_max = cbald_filtered.min(), cbald_filtered.max()
+    if cbald_max - cbald_min > 1e-8:
+        cbald_normalized = (cbald_filtered - cbald_min) / (cbald_max - cbald_min)
+    else:
+        cbald_normalized = np.ones(N)
+
+    # Step 4: Greedy selection using C-BALD scores + diversity
+    selected_indices = []
+    remaining_indices = list(range(N))
+
+    print(f"[C-BatchBALD-V2] Greedy selection with C-BALD ({cbald_weight*100:.0f}%) + diversity ({(1-cbald_weight)*100:.0f}%)...")
+
+    for iter_num in range(batch_size):
+        if not remaining_indices:
+            break
+
+        best_score = -np.inf
+        best_idx = None
+
+        for idx in remaining_indices:
+            # C-BALD component (uses death_prob + time_variance!)
+            cbald_component = cbald_normalized[idx]
+
+            # Diversity component (JS divergence from selected samples)
+            if len(selected_indices) > 0:
+                p_candidate = ensemble_survival[:, idx, :].mean(axis=0)  # [C]
+                p_candidate = np.clip(p_candidate, 1e-10, 1.0)
+                p_candidate = p_candidate / p_candidate.sum()
+
+                diversity_score = 0.0
+                for sel_idx in selected_indices:
+                    p_sel = ensemble_survival[:, sel_idx, :].mean(axis=0)
+                    p_sel = np.clip(p_sel, 1e-10, 1.0)
+                    p_sel = p_sel / p_sel.sum()
+
+                    # JS divergence
+                    m = (p_candidate + p_sel) / 2.0
+                    js_div = 0.5 * np.sum(p_candidate * np.log((p_candidate + 1e-10) / (m + 1e-10)))
+                    js_div += 0.5 * np.sum(p_sel * np.log((p_sel + 1e-10) / (m + 1e-10)))
+                    diversity_score += js_div
+
+                diversity_score /= len(selected_indices)
+            else:
+                diversity_score = 0.0
+
+            # Combine with MORE weight on C-BALD (80/20 instead of 60/40)
+            combined_score = cbald_weight * cbald_component + (1 - cbald_weight) * diversity_score
+
+            if combined_score > best_score:
+                best_score = combined_score
+                best_idx = idx
+
+        if best_idx is not None:
+            selected_indices.append(best_idx)
+            remaining_indices.remove(best_idx)
+
+        if (iter_num + 1) % 10 == 0:
+            print(f"[C-BatchBALD-V2] Selected {iter_num + 1}/{batch_size} samples...")
+
+    # Map back to original indices
+    final_indices = [int(top_cbald_indices[i]) for i in selected_indices]
+
+    print(f"[C-BatchBALD-V2] Completed! Selected {len(final_indices)} samples using C-BALD + diversity")
+
+    return final_indices
+
+
+def c_batchbald_adaptive_acquire(model, X_pool, batch_size, time_bins, config,
+                                  device='cpu', in_data_train=None, increment=10000,
+                                  costlist=None, budget=0, **kwargs):
+    """
+    C-BatchBALD Adaptive: Budget-aware diversity ratios.
+
+    Insight from experiments:
+    - Small budgets (≤10): Need more diversity (70/30)
+    - Medium budgets (11-30): Balanced (80/20)
+    - Large budgets (>30): Prioritize information value (90/10)
+
+    This adapts the C-BALD vs diversity weighting based on batch size.
+    """
+    # Determine adaptive ratio based on budget
+    if batch_size <= 10:
+        cbald_weight = 0.7  # 70% C-BALD, 30% diversity
+        print(f"[C-BatchBALD-Adaptive] Small budget mode: 70% C-BALD, 30% diversity")
+    elif batch_size <= 30:
+        cbald_weight = 0.8  # 80% C-BALD, 20% diversity
+        print(f"[C-BatchBALD-Adaptive] Medium budget mode: 80% C-BALD, 20% diversity")
+    else:
+        cbald_weight = 0.9  # 90% C-BALD, 10% diversity
+        print(f"[C-BatchBALD-Adaptive] Large budget mode: 90% C-BALD, 10% diversity")
+
+    # Use V2 implementation with adaptive weight
+    return c_batchbald_v2_acquire(model, X_pool, batch_size, time_bins, config,
+                                   device, in_data_train, increment, costlist, budget,
+                                   cbald_weight=cbald_weight, **kwargs)
+
+
 # =============================================================================
 # ENTROPY AND VARIANCE ACQUISITION
 # =============================================================================
