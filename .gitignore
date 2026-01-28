@@ -26,3 +26,6 @@ ENV/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Downloaded datasets
+data/support2.csv
