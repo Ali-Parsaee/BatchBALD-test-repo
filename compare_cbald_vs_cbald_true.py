@@ -356,9 +356,9 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
     X_train_val_scaled = scaler.fit_transform(X_train_val)
     X_test_scaled = scaler.transform(X_test)
 
-    # Artificially censor (num_initial_samples=200)
+    # Artificially censor (num_initial_samples=500)
     y_time_censored, y_event_censored, censored_indices = artificially_censor_true(
-        y_time_train_val, y_event_train_val, num_initial_samples=200, seed=seed
+        y_time_train_val, y_event_train_val, num_initial_samples=500, seed=seed
     )
 
     # Setup
