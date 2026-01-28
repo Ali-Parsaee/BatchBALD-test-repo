@@ -170,7 +170,7 @@ def run_single_trial(budget, method_name, acq_func, trial_num, device='cpu'):
 
     config = SimpleConfig()
     num_time_bins = len(time_bins) - 1
-    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins, config=config)
 
     train_dataset = TensorDataset(x_train, y_train)
     train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
@@ -258,7 +258,7 @@ def run_single_trial(budget, method_name, acq_func, trial_num, device='cpu'):
 
     # Retrain model
     x_train, y_train = reformat_survival(train_data_copy, time_bins)
-    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins, config=config)
 
     train_dataset = TensorDataset(x_train, y_train)
     train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)

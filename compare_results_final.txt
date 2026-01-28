@@ -1,0 +1,671 @@
+
+################################################################################
+# BUDGET = 10
+################################################################################
+
+
+================================================================================
+Trial 1/5 - Budget=10 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 0: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 2/5 - Budget=10 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 1: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 3/5 - Budget=10 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 2: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 4/5 - Budget=10 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 3: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 5/5 - Budget=10 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 4: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 1/5 - Budget=10 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 0: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 2/5 - Budget=10 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 1: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 3/5 - Budget=10 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 2: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 4/5 - Budget=10 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 3: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 5/5 - Budget=10 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 4: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 1/5 - Budget=10 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 0: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 2/5 - Budget=10 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 1: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 3/5 - Budget=10 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 2: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 4/5 - Budget=10 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 3: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 5/5 - Budget=10 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 4: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+################################################################################
+# BUDGET = 20
+################################################################################
+
+
+================================================================================
+Trial 1/5 - Budget=20 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 0: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 2/5 - Budget=20 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 1: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 3/5 - Budget=20 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 2: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 4/5 - Budget=20 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 3: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 5/5 - Budget=20 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 4: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 1/5 - Budget=20 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 0: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 2/5 - Budget=20 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 1: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 3/5 - Budget=20 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 2: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 4/5 - Budget=20 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 3: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 5/5 - Budget=20 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 4: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 1/5 - Budget=20 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 0: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 2/5 - Budget=20 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 1: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 3/5 - Budget=20 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 2: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 4/5 - Budget=20 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 3: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 5/5 - Budget=20 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 4: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+################################################################################
+# BUDGET = 30
+################################################################################
+
+
+================================================================================
+Trial 1/5 - Budget=30 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 0: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 2/5 - Budget=30 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 1: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 3/5 - Budget=30 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 2: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 4/5 - Budget=30 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 3: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 5/5 - Budget=30 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 4: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 1/5 - Budget=30 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 0: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 2/5 - Budget=30 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 1: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 3/5 - Budget=30 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 2: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 4/5 - Budget=30 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 3: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 5/5 - Budget=30 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 4: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 1/5 - Budget=30 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 0: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 2/5 - Budget=30 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 1: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 3/5 - Budget=30 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 2: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 4/5 - Budget=30 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 3: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+Trial 5/5 - Budget=30 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 4: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 173, in run_single_trial
+    model = BayesLinMtlr(in_features=x_train.shape[1], num_time_bins=num_time_bins)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BayesLinMtlr.__init__() missing 1 required positional argument: 'config'
+
+================================================================================
+FINAL SUMMARY: C-BALD vs BatchBALD vs CBALD_True
+================================================================================
+
+
+============================================================
+Budget = 10
+============================================================
+
+Rank   Method          Improvement          vs C-BALD
+------------------------------------------------------------
+
+============================================================
+Budget = 20
+============================================================
+
+Rank   Method          Improvement          vs C-BALD
+------------------------------------------------------------
+
+============================================================
+Budget = 30
+============================================================
+
+Rank   Method          Improvement          vs C-BALD
+------------------------------------------------------------
