@@ -1756,6 +1756,182 @@ def c_batchbald_adaptive_acquire(model, X_pool, batch_size, time_bins, config,
 
 
 # =============================================================================
+# CBALD_TRUE: Paper-Correct C-BALD Formulation
+# =============================================================================
+
+def _entropy_categorical_cbald_true(p, eps=1e-12):
+    """
+    Compute entropy of categorical distribution.
+
+    Args:
+        p: [..., C] probabilities, sum over last dim = 1
+        eps: Small constant for numerical stability
+
+    Returns:
+        entropy: [...] entropy values
+    """
+    from scipy.special import xlogy
+    p = np.clip(p, eps, 1.0)
+    return -np.sum(xlogy(p, p), axis=-1)
+
+
+def _entropy_bernoulli_cbald_true(q, eps=1e-12):
+    """
+    Compute entropy of Bernoulli distribution.
+
+    Args:
+        q: [...] probabilities in (0,1)
+        eps: Small constant for numerical stability
+
+    Returns:
+        entropy: [...] entropy values
+    """
+    from scipy.special import xlogy
+    q = np.clip(q, eps, 1.0 - eps)
+    return -(xlogy(q, q) + xlogy(1 - q, 1 - q))
+
+
+def cbald_true_score(model, X_pool, batch_size, time_bins, config,
+                     device='cpu', in_data_train=None, increment=10000,
+                     budget=0, costlist=None, eps=1e-12, **kwargs):
+    """
+    CBALD_True: Paper-correct C-BALD formulation.
+
+    Implements: C-BALD(x) = I(l;θ|x) + I(y;θ|l,x)
+
+    Where:
+    - I(l;θ|x): Mutual information between censoring indicator and model
+    - I(y;θ|l,x): Mutual information between outcome and model, conditioned on censoring
+
+    This is the theoretically correct formulation from the C-BALD paper.
+    """
+    from model import mtlr_survival
+
+    print(f"[CBALD_True] Computing paper-correct C-BALD scores...")
+
+    # Get ensemble predictions
+    model.eval()
+    with torch.no_grad():
+        x_tensor = torch.FloatTensor(X_pool).to(device)
+        K = min(50, config.n_samples_test)
+
+        all_survival_probs = []
+        for _ in range(K):
+            logits = model.forward(x_tensor, sample=True, n_samples=1)
+            logits_2d = logits.squeeze(0)
+            survival_probs = mtlr_survival(logits_2d, with_sample=False)
+            all_survival_probs.append(survival_probs.cpu().numpy())
+
+        predictions = np.array(all_survival_probs)  # [K, N, T]
+
+    K, N, T = predictions.shape
+
+    # Get current censoring status
+    censoredtime = np.array(in_data_train['time'])
+    event = np.array(in_data_train['event']) if 'event' in in_data_train else np.ones(N)
+
+    # Normalize predictions
+    probs_ens = predictions.copy()
+    probs_ens = np.clip(probs_ens, eps, 1.0)
+    probs_ens = probs_ens / probs_ens.sum(axis=2, keepdims=True)
+
+    # Step 1: Compute lambda_ens - p(l=1|x,θ) where l=1 means uncensored
+    # This is the probability of death within the observable window
+    temp_bins = np.array([0] + list(time_bins)[:-1])
+    current_bin = _map_indices(censoredtime, temp_bins).astype(int)
+    max_observable_bin = np.minimum(current_bin + increment // 1000, T - 1).astype(int)
+
+    lambda_ens = np.zeros((K, N))
+    for i in range(N):
+        if event[i] == 1:
+            lambda_ens[:, i] = 1.0
+            continue
+
+        c = int(current_bin[i])
+        max_obs = int(max_observable_bin[i])
+
+        if c + 1 < T:
+            probs_i = probs_ens[:, i, :].copy()  # [K, T]
+            probs_i[:, :c+1] = 0
+            probs_i = probs_i / (probs_i.sum(axis=1, keepdims=True) + eps)
+
+            if c + 1 <= max_obs:
+                lambda_ens[:, i] = probs_i[:, c+1:max_obs+1].sum(axis=1)
+
+    # Step 2: Estimate z_idx (censoring threshold)
+    mean_probs = probs_ens.mean(axis=0)  # [N, T]
+    z_idx = np.zeros(N, dtype=int)
+
+    for i in range(N):
+        c = int(current_bin[i])
+        probs_i = mean_probs[i].copy()
+        probs_i[:c+1] = 0
+        probs_i = probs_i / (probs_i.sum() + eps)
+
+        bin_ids = np.arange(T)
+        exp_bin = (probs_i * bin_ids).sum()
+        z_idx[i] = int(np.clip(np.round(exp_bin), c, T - 1))
+
+    # Step 3: Term A - I(l;θ|x) = H(E[p(l|x,θ)]) - E[H(p(l|x,θ))]
+    q_bar = lambda_ens.mean(axis=0)  # [N]
+    H_qbar = _entropy_bernoulli_cbald_true(q_bar, eps=eps)  # [N]
+    H_q_theta = _entropy_bernoulli_cbald_true(lambda_ens, eps=eps)  # [K, N]
+    I_l = H_qbar - H_q_theta.mean(axis=0)  # [N]
+
+    # Step 4: Term B1 - I_y_unc (uncensored label MI)
+    p_bar = probs_ens.mean(axis=0)  # [N, T]
+    H_pbar = _entropy_categorical_cbald_true(p_bar, eps=eps)  # [N]
+    H_p_theta = _entropy_categorical_cbald_true(probs_ens, eps=eps)  # [K, N]
+    I_y_unc = H_pbar - H_p_theta.mean(axis=0)  # [N]
+
+    # Step 5: Term B2 - I_y_cens (censored observation MI)
+    # Create mask for t >= z_idx
+    t_indices = np.arange(T).reshape(1, 1, T)  # [1, 1, T]
+    z_indices = z_idx.reshape(1, N, 1)  # [1, N, 1]
+    mask = (t_indices >= z_indices).astype(float)  # [1, N, T]
+
+    # Survival mass for each ensemble member
+    S_theta = (probs_ens * mask).sum(axis=2)  # [K, N]
+    S_theta = np.clip(S_theta, eps, 1.0)
+    S_bar = S_theta.mean(axis=0)  # [N]
+
+    # Entropy of censored observation
+    H_Sbar = -np.log(np.clip(S_bar, eps, 1.0))  # [N]
+    H_Stheta = -np.log(S_theta)  # [K, N]
+    I_y_cens = H_Sbar - H_Stheta.mean(axis=0)  # [N]
+
+    # Step 6: Blend by expected censoring probability
+    I_y_given_l = q_bar * I_y_unc + (1.0 - q_bar) * I_y_cens  # [N]
+
+    # Step 7: Total C-BALD score
+    cbald_true_scores = I_l + I_y_given_l  # [N]
+
+    print(f"[CBALD_True] I(l;θ|x) mean: {I_l.mean():.4f}, I(y;θ|l,x) mean: {I_y_given_l.mean():.4f}")
+
+    return cbald_true_scores
+
+
+def cbald_true_acquire(model, X_pool, batch_size, time_bins, config,
+                       device='cpu', in_data_train=None, increment=10000,
+                       costlist=None, budget=0, **kwargs):
+    """
+    CBALD_True acquisition function - paper-correct C-BALD formulation.
+
+    Uses the theoretically correct decomposition:
+    C-BALD(x) = I(l;θ|x) + I(y;θ|l,x)
+
+    This is different from our simplified C-BALD which uses:
+    C-BALD(x) = time_variance * (0.5 + 0.5 * death_prob)
+    """
+    scores = cbald_true_score(model, X_pool, batch_size, time_bins, config,
+                              device, in_data_train, increment, budget, costlist, **kwargs)
+
+    print(f"[CBALD_True] Score range: [{scores.min():.4f}, {scores.max():.4f}]")
+
+    return select_indices_from_scores(scores, budget, costlist, batch_size), scores
+
+
+# =============================================================================
 # ENTROPY AND VARIANCE ACQUISITION
 # =============================================================================
 
