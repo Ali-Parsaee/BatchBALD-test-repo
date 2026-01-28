@@ -127,9 +127,17 @@ def run_single_trial(budget, method_name, acq_func, trial_num, device='cpu'):
     torch.manual_seed(seed)
 
     # Load data
-    data = pd.read_csv('Data/flchain.csv')
-    data = data.drop(['Unnamed: 0', 'chapter'], axis=1, errors='ignore')
+    nacd_path = "data/MIMIC/NACD/NACD_Full.csv"
+    data = pd.read_csv(nacd_path)
+
+    # Drop columns
+    cols_to_drop = ['PERFORMANCE_STATUS', 'STAGE_NUMERICAL', 'AGE65']
+    data = data.drop(columns=[c for c in cols_to_drop if c in data.columns], errors='ignore')
     data = data.dropna()
+
+    # Rename to match expected columns
+    if 'SURVIVAL_TIME' in data.columns:
+        data = data.rename(columns={'SURVIVAL_TIME': 'time', 'CENSOR': 'event'})
 
     # Train/test split
     train_data, test_data = train_test_split(data, test_size=0.3, random_state=seed)
@@ -147,7 +155,7 @@ def run_single_trial(budget, method_name, acq_func, trial_num, device='cpu'):
 
     # Standardize features
     scaler = StandardScaler()
-    features = ['age', 'sex', 'sample.yr', 'kappa', 'lambda', 'flc.grp', 'creatinine', 'mgus']
+    features = [c for c in train_data_copy.columns if c not in ['time', 'event']]
     train_data_copy[features] = scaler.fit_transform(train_data_copy[features])
     test_data[features] = scaler.transform(test_data[features])
 
