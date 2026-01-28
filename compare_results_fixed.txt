@@ -1,0 +1,1436 @@
+
+################################################################################
+# BUDGET = 10
+################################################################################
+
+
+================================================================================
+Trial 1/5 - Budget=10 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 0: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 2/5 - Budget=10 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 1: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 3/5 - Budget=10 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 2: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 4/5 - Budget=10 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 3: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 5/5 - Budget=10 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 4: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 1/5 - Budget=10 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 0: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 2/5 - Budget=10 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 1: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 3/5 - Budget=10 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 2: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 4/5 - Budget=10 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 3: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 5/5 - Budget=10 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 4: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 1/5 - Budget=10 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 0: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 2/5 - Budget=10 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 1: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 3/5 - Budget=10 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 2: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 4/5 - Budget=10 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 3: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 5/5 - Budget=10 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 4: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+################################################################################
+# BUDGET = 20
+################################################################################
+
+
+================================================================================
+Trial 1/5 - Budget=20 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 0: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 2/5 - Budget=20 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 1: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 3/5 - Budget=20 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 2: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 4/5 - Budget=20 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 3: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 5/5 - Budget=20 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 4: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 1/5 - Budget=20 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 0: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 2/5 - Budget=20 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 1: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 3/5 - Budget=20 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 2: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 4/5 - Budget=20 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 3: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 5/5 - Budget=20 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 4: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 1/5 - Budget=20 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 0: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 2/5 - Budget=20 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 1: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 3/5 - Budget=20 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 2: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 4/5 - Budget=20 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 3: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 5/5 - Budget=20 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 4: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+################################################################################
+# BUDGET = 30
+################################################################################
+
+
+================================================================================
+Trial 1/5 - Budget=30 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 0: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 2/5 - Budget=30 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 1: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 3/5 - Budget=30 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 2: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 4/5 - Budget=30 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 3: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 5/5 - Budget=30 - Method=C-BALD
+================================================================================
+
+ERROR in C-BALD trial 4: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 1/5 - Budget=30 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 0: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 2/5 - Budget=30 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 1: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 3/5 - Budget=30 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 2: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 4/5 - Budget=30 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 3: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 5/5 - Budget=30 - Method=BatchBALD
+================================================================================
+
+ERROR in BatchBALD trial 4: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 1/5 - Budget=30 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 0: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 2/5 - Budget=30 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 1: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 3/5 - Budget=30 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 2: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 4/5 - Budget=30 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 3: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+Trial 5/5 - Budget=30 - Method=CBALD_True
+================================================================================
+
+ERROR in CBALD_True trial 4: 'time'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3641, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 168, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 197, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7668, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7676, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 326, in main
+    initial, final, improvement = run_single_trial(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/BatchBALD-test-repo/compare_cbald_variants.py", line 148, in run_single_trial
+    train_data['time'].values, train_data['event'].values,
+    ~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/frame.py", line 4378, in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pandas/core/indexes/base.py", line 3648, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
+
+================================================================================
+FINAL SUMMARY: C-BALD vs BatchBALD vs CBALD_True
+================================================================================
+
+
+============================================================
+Budget = 10
+============================================================
+
+Rank   Method          Improvement          vs C-BALD
+------------------------------------------------------------
+
+============================================================
+Budget = 20
+============================================================
+
+Rank   Method          Improvement          vs C-BALD
+------------------------------------------------------------
+
+============================================================
+Budget = 30
+============================================================
+
+Rank   Method          Improvement          vs C-BALD
+------------------------------------------------------------

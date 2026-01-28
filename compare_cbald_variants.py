@@ -136,8 +136,8 @@ def run_single_trial(budget, method_name, acq_func, trial_num, device='cpu'):
     data = data.dropna()
 
     # Rename to match expected columns
-    if 'SURVIVAL_TIME' in data.columns:
-        data = data.rename(columns={'SURVIVAL_TIME': 'time', 'CENSOR': 'event'})
+    if 'SURVIVAL' in data.columns and 'CENSORED' in data.columns:
+        data = data.rename(columns={'SURVIVAL': 'time', 'CENSORED': 'event'})
 
     # Train/test split
     train_data, test_data = train_test_split(data, test_size=0.3, random_state=seed)
