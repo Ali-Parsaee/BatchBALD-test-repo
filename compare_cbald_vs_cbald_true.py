@@ -5,7 +5,7 @@ Settings:
 - Budget: 20
 - Trials: 5
 - increment: 60
-- Dataset: MIMIC (falls back to NACD if MIMIC unavailable)
+- Dataset: SUPPORT
 - num_initial_samples: 200 (uncensored)
 - test_size: 0.2
 - num_bins: 10
@@ -19,6 +19,7 @@ Methods:
 2. CBALD_True: I(l;theta|x) + I(y;theta|l,x) (paper-correct)
 """
 
+import os
 import sys
 sys.path.insert(0, '.')
 sys.path.insert(0, 'Model_stuff')
@@ -42,7 +43,10 @@ from Model_stuff.acquisition import (
     _map_indices,
 )
 from Model_stuff.utils import ensemble_to_pdf
-from Model_stuff.data import make_mimic_data, make_nacd_data
+import ssl
+import urllib.request
+import io
+import zipfile
 
 
 # ==================== CBALD_True IMPLEMENTATION ====================
@@ -298,33 +302,46 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
     np.random.seed(seed)
     torch.manual_seed(seed)
 
-    # Load data - try MIMIC first, fall back to NACD
-    try:
-        df = make_mimic_data()
-        dataset_name = "MIMIC"
-    except FileNotFoundError:
-        print("      MIMIC preprocessed CSV not found, falling back to NACD")
-        try:
-            df = make_nacd_data()
-        except FileNotFoundError:
-            # Direct load from known path
-            raw = pd.read_csv('data/MIMIC/NACD/NACD_Full.csv')
-            cols_to_drop = ['PERFORMANCE_STATUS', 'STAGE_NUMERICAL', 'AGE65']
-            raw = raw.drop([c for c in cols_to_drop if c in raw.columns], axis=1)
-            if "CENSORED" in raw.columns:
-                raw["event"] = 1 - raw["CENSORED"]
-                raw = raw.drop(columns=["CENSORED"])
-            if "SURVIVAL" in raw.columns:
-                raw = raw.rename(columns={"SURVIVAL": "time"})
-            cols_standardize = ['BOX1_SCORE', 'BOX2_SCORE', 'BOX3_SCORE', 'BMI', 'WEIGHT_CHANGEPOINT',
-                                'AGE', 'GRANULOCYTES', 'LDH_SERUM', 'LYMPHOCYTES',
-                                'PLATELET', 'WBC_COUNT', 'CALCIUM_SERUM', 'HGB', 'CREATININE_SERUM', 'ALBUMIN']
-            cols_standardize = [c for c in cols_standardize if c in raw.columns]
-            raw[cols_standardize] = raw[cols_standardize].apply(lambda x: (x - x.mean()) / x.std())
-            df = raw
-        dataset_name = "NACD"
+    # Load SUPPORT dataset
+    support_csv = 'data/support2.csv'
+    if not os.path.exists(support_csv):
+        print("      Downloading SUPPORT dataset...")
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        url = "https://hbiostat.org/data/repo/support2csv.zip"
+        response = urllib.request.urlopen(url, context=ctx, timeout=60)
+        zf = zipfile.ZipFile(io.BytesIO(response.read()))
+        os.makedirs(os.path.dirname(support_csv), exist_ok=True)
+        zf.extract('support2.csv', 'data')
 
-    print(f"      Dataset: {dataset_name} ({df.shape[0]} samples, {df.shape[1]} features)")
+    cols_to_drop = ["hospdead", "slos", "charges", "totcst", "totmcst", "avtisst", "sfdm2",
+                    "adlp", "adls", "dzgroup", "sps", "aps", "surv2m", "surv6m",
+                    "prg2m", "prg6m", "dnr", "dnrday", "hday"]
+    df = (pd.read_csv(support_csv).drop(cols_to_drop, axis=1)
+          .rename(columns={"d.time": "time", "death": "event"}))
+    df["event"] = df["event"].astype(int)
+    df["ca"] = (df["ca"] == "metastatic").astype(int)
+    fill_vals = {
+        "alb": 3.5, "pafi": 333.3, "bili": 1.01, "crea": 1.01, "bun": 6.51,
+        "wblc": 9, "urine": 2502, "edu": df["edu"].mean(), "ph": df["ph"].mean(),
+        "glucose": df["glucose"].mean(), "scoma": df["scoma"].mean(),
+        "meanbp": df["meanbp"].mean(), "hrt": df["hrt"].mean(),
+        "resp": df["resp"].mean(), "temp": df["temp"].mean(),
+        "sod": df["sod"].mean(), "income": df["income"].mode()[0],
+        "race": df["race"].mode()[0]
+    }
+    df = df.fillna(fill_vals)
+    df["sex"] = df["sex"].map({"male": 1, "female": 0})
+    df["income"] = df["income"].map({"under $11k": 0, "$11-$25k": 1, "$25-$50k": 2, ">$50k": 3})
+    skip_cols = ["event", "sex", "time", "dzclass", "race", "diabetes", "dementia", "ca"]
+    cols_standardize = [c for c in df.columns if c not in skip_cols]
+    df[cols_standardize] = df[cols_standardize].apply(lambda x: (x - x.mean()) / x.std())
+    onehot_cols = ["dzclass", "race"]
+    df = pd.get_dummies(df, columns=onehot_cols, drop_first=True)
+    if "dzclass_COPD/CHF/Cirrhosis" in df.columns:
+        df = df.rename(columns={"dzclass_COPD/CHF/Cirrhosis": "dzclass_COPD"})
+    print(f"      Dataset: SUPPORT ({df.shape[0]} samples, {df.shape[1]} features)")
 
     # Data already has 'time' and 'event' columns, features already standardized
     X = df.drop(columns=['time', 'event'])
