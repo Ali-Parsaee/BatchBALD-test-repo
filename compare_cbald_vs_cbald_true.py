@@ -1,12 +1,12 @@
 """
 Fair Comparison: C-BALD vs CBALD_True
 
-Using EXACT settings from test_cbald_variants.py that produced C-BALD's +0.0173:
+Settings:
 - Budget: 20
 - Trials: 5
 - increment: 60
-- Dataset: NACD
-- num_initial_samples: 50
+- Dataset: MIMIC (falls back to NACD if MIMIC unavailable)
+- num_initial_samples: 200 (uncensored)
 - test_size: 0.2
 - num_bins: 10
 - Model: BayesLinMtlr
@@ -37,8 +37,130 @@ import copy
 from Model_stuff.model import BayesLinMtlr, mtlr_survival
 from Model_stuff.acquisition import (
     cbald_censored_regression,  # C-BALD (simplified)
-    cbald_true_acquire,         # CBALD_True (paper-correct)
+    select_indices_from_scores,
+    _make_prediction,
+    _map_indices,
 )
+from Model_stuff.utils import ensemble_to_pdf
+from Model_stuff.data import make_mimic_data, make_nacd_data
+
+
+# ==================== CBALD_True IMPLEMENTATION ====================
+
+def cbald_true_acquire(model, X_pool, batch_size, time_bins, config,
+                       device='cpu', in_data_train=None, increment=10000,
+                       costlist=None, budget=0, **kwargs):
+    """
+    CBALD_True: I(l;theta|x) + I(y;theta|l,x) — paper-correct formulation.
+
+    Term 1: I(l;theta|x) = H(Y_oracle) - E_theta[H(Y_oracle|theta)]
+      Mutual information between oracle label and model parameters.
+
+    Term 2: I(y;theta|l,x) = P(still censored) * [H(y|censored) - E_theta[H(y|censored,theta)]]
+      Additional information about true outcome beyond oracle label.
+      Only nonzero when oracle outcome is "still alive at c+k".
+    """
+    model.eval()
+    with torch.no_grad():
+        x_tensor = torch.FloatTensor(X_pool).to(device)
+        _, _, ensemble_outputs = _make_prediction(model, x_tensor, time_bins, config)
+        pdf = ensemble_to_pdf(ensemble_outputs, device)  # [N, K, T]
+
+    N, K, T = pdf.shape
+    eps = 1e-10
+
+    # Get censoring bin indices
+    time_bins_np = np.array(time_bins) if not isinstance(time_bins, np.ndarray) else time_bins
+    temp_bins = np.array([0] + list(time_bins_np)[:-1])
+    censoredtime = np.array(in_data_train['time'])
+    start_bins = _map_indices(censoredtime, temp_bins).astype(int)
+    end_bins = _map_indices(censoredtime + increment, temp_bins).astype(int)
+
+    scores = np.zeros(N)
+
+    for i in range(N):
+        c = int(start_bins[i])
+        max_bin = min(int(end_bins[i]), T - 1)
+
+        # --- Term 1: I(l;theta|x) = H(Y_oracle) - E_theta[H(Y_oracle|theta)] ---
+
+        # H(Y_oracle) from averaged PDF
+        mean_pdf_i = pdf[i].mean(dim=0)  # [T]
+        probs_avg = mean_pdf_i.clone()
+        if c > 0:
+            probs_avg[:c] = 0
+        total_avg = probs_avg.sum()
+        if total_avg > eps:
+            probs_avg = probs_avg / total_avg
+
+        # Oracle outcomes: died in bins [c, max_bin], or still alive
+        oracle_probs_avg = []
+        for t in range(c, max_bin + 1):
+            if t < T:
+                oracle_probs_avg.append(probs_avg[t])
+        p_censored_avg = probs_avg[max_bin + 1:].sum() if max_bin + 1 < T else torch.tensor(0.0, device=device)
+        oracle_probs_avg.append(p_censored_avg)
+        oracle_probs_avg = torch.stack(oracle_probs_avg)
+
+        H_oracle = -torch.sum(oracle_probs_avg * torch.log(oracle_probs_avg + eps))
+
+        # E_theta[H(Y_oracle|theta)]
+        cond_entropies = torch.zeros(K, device=device)
+        for k in range(K):
+            probs_k = pdf[i, k].clone()
+            if c > 0:
+                probs_k[:c] = 0
+            total_k = probs_k.sum()
+            if total_k > eps:
+                probs_k = probs_k / total_k
+
+            oracle_k = []
+            for t in range(c, max_bin + 1):
+                if t < T:
+                    oracle_k.append(probs_k[t])
+            p_cens_k = probs_k[max_bin + 1:].sum() if max_bin + 1 < T else torch.tensor(0.0, device=device)
+            oracle_k.append(p_cens_k)
+            oracle_k = torch.stack(oracle_k)
+            cond_entropies[k] = -torch.sum(oracle_k * torch.log(oracle_k + eps))
+
+        E_H_oracle_given_theta = cond_entropies.mean()
+        term1 = (H_oracle - E_H_oracle_given_theta).item()
+
+        # --- Term 2: I(y;theta|l,x) ---
+        # Only contributes when oracle says "still alive at c+k"
+        term2 = 0.0
+        if max_bin + 1 < T and p_censored_avg.item() > eps:
+            # H(y | alive at c+k) from averaged PDF
+            tail_avg = probs_avg[max_bin + 1:].clone()
+            tail_total = tail_avg.sum()
+            if tail_total > eps:
+                tail_avg = tail_avg / tail_total
+            H_y_alive = -torch.sum(tail_avg * torch.log(tail_avg + eps)).item()
+
+            # E_theta[H(y | alive at c+k, theta)]
+            cond_tail = torch.zeros(K, device=device)
+            for k in range(K):
+                probs_k = pdf[i, k].clone()
+                if c > 0:
+                    probs_k[:c] = 0
+                total_k = probs_k.sum()
+                if total_k > eps:
+                    probs_k = probs_k / total_k
+
+                tail_k = probs_k[max_bin + 1:].clone()
+                tail_k_total = tail_k.sum()
+                if tail_k_total > eps:
+                    tail_k = tail_k / tail_k_total
+                cond_tail[k] = -torch.sum(tail_k * torch.log(tail_k + eps))
+
+            E_H_y_alive_theta = cond_tail.mean().item()
+            term2 = p_censored_avg.item() * (H_y_alive - E_H_y_alive_theta)
+
+        scores[i] = term1 + term2
+
+    print("cbald_true_acquire scores: ", scores)
+    selected = select_indices_from_scores(scores, budget, costlist, batch_size)
+    return selected, scores
 
 
 # ==================== HELPER FUNCTIONS ====================
@@ -170,23 +292,41 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
     print(f"  Trial {trial_num}/5")
     print("  " + "-" * 68)
 
-    # Set seed for reproducibility (same as test_cbald_variants.py)
+    # Set seed for reproducibility
     seed = 100 + trial_num - 1
     print(f"      Setting random seed: {seed}")
     np.random.seed(seed)
     torch.manual_seed(seed)
 
-    # Load data
-    df = pd.read_csv('data/MIMIC/NACD/NACD_Full.csv')
+    # Load data - try MIMIC first, fall back to NACD
+    try:
+        df = make_mimic_data()
+        dataset_name = "MIMIC"
+    except FileNotFoundError:
+        print("      MIMIC preprocessed CSV not found, falling back to NACD")
+        try:
+            df = make_nacd_data()
+        except FileNotFoundError:
+            # Direct load from known path
+            raw = pd.read_csv('data/MIMIC/NACD/NACD_Full.csv')
+            cols_to_drop = ['PERFORMANCE_STATUS', 'STAGE_NUMERICAL', 'AGE65']
+            raw = raw.drop([c for c in cols_to_drop if c in raw.columns], axis=1)
+            if "CENSORED" in raw.columns:
+                raw["event"] = 1 - raw["CENSORED"]
+                raw = raw.drop(columns=["CENSORED"])
+            if "SURVIVAL" in raw.columns:
+                raw = raw.rename(columns={"SURVIVAL": "time"})
+            cols_standardize = ['BOX1_SCORE', 'BOX2_SCORE', 'BOX3_SCORE', 'BMI', 'WEIGHT_CHANGEPOINT',
+                                'AGE', 'GRANULOCYTES', 'LDH_SERUM', 'LYMPHOCYTES',
+                                'PLATELET', 'WBC_COUNT', 'CALCIUM_SERUM', 'HGB', 'CREATININE_SERUM', 'ALBUMIN']
+            cols_standardize = [c for c in cols_standardize if c in raw.columns]
+            raw[cols_standardize] = raw[cols_standardize].apply(lambda x: (x - x.mean()) / x.std())
+            df = raw
+        dataset_name = "NACD"
 
-    # Handle column names (NACD uses CENSORED/SURVIVAL)
-    if "CENSORED" in df.columns:
-        df["event"] = 1 - df["CENSORED"]
-        df = df.drop(columns=["CENSORED"])
-    if "SURVIVAL" in df.columns:
-        df = df.rename(columns={"SURVIVAL": "time"})
+    print(f"      Dataset: {dataset_name} ({df.shape[0]} samples, {df.shape[1]} features)")
 
-    # Preprocess
+    # Data already has 'time' and 'event' columns, features already standardized
     X = df.drop(columns=['time', 'event'])
     y_time = df['time'].values
     y_event = df['event'].values
@@ -199,12 +339,12 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
     X_train_val_scaled = scaler.fit_transform(X_train_val)
     X_test_scaled = scaler.transform(X_test)
 
-    # Artificially censor (num_initial_samples=50 as in test_cbald_variants.py)
+    # Artificially censor (num_initial_samples=200)
     y_time_censored, y_event_censored, censored_indices = artificially_censor_true(
-        y_time_train_val, y_event_train_val, num_initial_samples=50, seed=seed
+        y_time_train_val, y_event_train_val, num_initial_samples=200, seed=seed
     )
 
-    # Setup (num_bins=10 as in test_cbald_variants.py)
+    # Setup
     num_bins = 10
     event_times = y_time_train_val[y_event_train_val == 1]
     quantiles = np.linspace(0, 1, num_bins + 1)[1:]
@@ -212,7 +352,7 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
     time_bins[-1] *= 1.05
     time_bins = np.array([0] + list(time_bins))
 
-    # Config (exact same as test_cbald_variants.py)
+    # Config
     config = argparse.Namespace()
     config.pi = 0.5
     config.sigma1 = 1.0
@@ -251,7 +391,6 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
         config=config
     )
 
-    # lr=8e-5 as in test_cbald_variants.py
     optimizer = torch.optim.Adam(shared_model.parameters(), lr=8e-5)
 
     best_loss = float('inf')
@@ -292,7 +431,7 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
         mean_survival = survival_probs.mean(dim=0).cpu().numpy()
 
     pred_times = expected_times_from_survival(mean_survival, time_bins)
-    initial_cindex = concordance(-pred_times, y_time_test, y_event_test)
+    initial_cindex = concordance(pred_times, y_time_test, y_event_test)
     print(f"      Shared initial C-index: {initial_cindex:.4f}")
     print("      All methods will start from this SAME model!")
 
@@ -334,7 +473,6 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
         acquisition_functions = all_acquisition_functions
 
     results = {}
-    # increment=60 as in test_cbald_variants.py
     increment = 60
     costlist = np.ones(len(X_censored))
 
@@ -356,7 +494,7 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
             survival_probs = mtlr_survival(logits, with_sample=True)
             mean_survival = survival_probs.mean(dim=0).cpu().numpy()
         pred_times = expected_times_from_survival(mean_survival, time_bins)
-        init_c = concordance(-pred_times, y_time_test, y_event_test)
+        init_c = concordance(pred_times, y_time_test, y_event_test)
         print(f"      [{acq_name}] Initial C-index: {init_c:.4f} (verified same as base)")
 
         # Run acquisition
@@ -444,7 +582,7 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
             mean_survival = survival_probs.mean(dim=0).cpu().numpy()
 
         pred_times = expected_times_from_survival(mean_survival, time_bins)
-        final_cindex = concordance(-pred_times, y_time_test, y_event_test)
+        final_cindex = concordance(pred_times, y_time_test, y_event_test)
         improvement = final_cindex - initial_cindex
         total_time = acq_time + retrain_time
 
@@ -479,7 +617,7 @@ def main():
         print("VERIFICATION: C-BALD ONLY")
         print("=" * 70)
         print()
-        print("Verifying C-BALD achieves ~+0.0173 with exact settings")
+        print("Running C-BALD only for verification")
         methods_to_run = ['C-BALD']
     else:
         print("FAIR COMPARISON: C-BALD vs CBALD_True")
@@ -491,28 +629,17 @@ def main():
         methods_to_run = None
 
     print()
-    print("Settings (EXACT match to test_cbald_variants.py):")
+    print("Settings:")
     print(f"  Trials: {args.trials}")
     print(f"  Budget: {args.budget}")
     print("  increment: 60")
-    print("  num_initial_samples: 50")
+    print("  num_initial_samples: 200 (uncensored)")
     print("  test_size: 0.2")
     print("  num_bins: 10")
     print("  lr: 8e-5")
     print("  patience: 10")
     print("  n_samples_test: 100")
-    print()
-
-    # Load data once to display info
-    df = pd.read_csv('data/MIMIC/NACD/NACD_Full.csv')
-    if "CENSORED" in df.columns:
-        df["event"] = 1 - df["CENSORED"]
-        df = df.drop(columns=["CENSORED"])
-    if "SURVIVAL" in df.columns:
-        df = df.rename(columns={"SURVIVAL": "time"})
-    print("Loading NACD dataset...")
-    print(f"   Dataset shape: {df.shape}")
-    print(f"   Device: cpu")
+    print(f"  Device: cpu")
     print()
 
     # Run trials
@@ -561,15 +688,15 @@ def main():
 
     print("Method Rankings (by mean IMPROVEMENT):")
     print("-" * 70)
-    for i, (method, stats) in enumerate(sorted_methods):
-        print(f"{i+1}. {method:30s} {stats['mean_improvement']:+.4f} +/- {stats['std_improvement']:.4f}")
-        print(f"   Individual trials: {[f'{x:+.4f}' for x in stats['improvements']]}")
+    for i, (method, mstats) in enumerate(sorted_methods):
+        print(f"{i+1}. {method:30s} {mstats['mean_improvement']:+.4f} +/- {mstats['std_improvement']:.4f}")
+        print(f"   Individual trials: {[f'{x:+.4f}' for x in mstats['improvements']]}")
 
     print()
     print("Initial C-index (should be SAME for all methods):")
     print("-" * 70)
-    for method, stats in sorted_methods:
-        print(f"{method:30s} {stats['mean_initial']:.4f} +/- {stats['std_initial']:.4f}")
+    for method, mstats in sorted_methods:
+        print(f"{method:30s} {mstats['mean_initial']:.4f} +/- {mstats['std_initial']:.4f}")
 
     # Verification check
     if args.verify_cbald_only:
@@ -579,16 +706,8 @@ def main():
         print("=" * 70)
         if 'C-BALD' in method_stats:
             mean_imp = method_stats['C-BALD']['mean_improvement']
-            expected = 0.0173
-            diff = abs(mean_imp - expected)
-            print(f"C-BALD mean improvement: {mean_imp:+.4f}")
-            print(f"Expected (from CBALD_VARIANTS_IMPROVEMENTS.md): +0.0173")
-            print(f"Difference: {diff:.4f}")
-            if diff < 0.005:
-                print("VERIFICATION PASSED: C-BALD result is consistent!")
-            else:
-                print("WARNING: C-BALD result differs from expected +0.0173")
-                print("This may be due to randomness or environment differences.")
+            std_imp = method_stats['C-BALD']['std_improvement']
+            print(f"C-BALD mean improvement: {mean_imp:+.4f} +/- {std_imp:.4f}")
     else:
         # Statistical comparison
         print()
