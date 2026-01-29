@@ -1,22 +1,25 @@
 """
-Fair Comparison: C-BALD vs CBALD_True
+Fair Comparison: Acquisition Functions for Censored Survival Analysis
 
 Settings:
-- Budget: 20
-- Trials: 5
-- increment: 60
-- Dataset: SUPPORT
-- num_initial_samples: 200 (uncensored)
+- Budget: 50
+- Trials: 3
+- increment: 20
+- Dataset: NACD
+- num_initial_samples: 500 (uncensored)
 - test_size: 0.2
-- num_bins: 10
+- num_bins: 20
 - Model: BayesLinMtlr
 - lr: 8e-5
 - epochs: 100 (early stopping, patience=10)
 - n_samples_test: 100
 
 Methods:
-1. C-BALD: time_variance * (0.5 + 0.5 * death_prob)
-2. CBALD_True: I(l;theta|x) + I(y;theta|l,x) (paper-correct)
+1. C-BALD: time_variance * (0.5 + 0.5 * death_prob) — uses variance, not BALD
+2. CBALDBALD: BALD * (0.5 + 0.5 * death_prob) — uses entropy-based BALD
+3. CBALD_True: I(l;theta|x) + I(y;theta|l,x) (paper-correct)
+4. Variance: variance of probs across ensemble
+5. Entropy: entropy of averaged probs
 """
 
 import os
@@ -49,6 +52,64 @@ import ssl
 import urllib.request
 import io
 import zipfile
+
+
+# ==================== CBALDBALD IMPLEMENTATION ====================
+
+def cbaldbald_acquire(model, X_pool, batch_size, time_bins, config,
+                      device='cpu', in_data_train=None, increment=10000,
+                      costlist=None, budget=0, **kwargs):
+    """
+    CBALDBALD: Entropy-based BALD weighted by death probability.
+
+    Uses true BALD formulation: I(y;θ|x) = H(y|x) - E_θ[H(y|x,θ)]
+    Where y is the full PDF over time bins.
+
+    Then weights by death probability in window (like C-BALD).
+    """
+    model.eval()
+    with torch.no_grad():
+        x_tensor = torch.FloatTensor(X_pool).to(device)
+        _, _, ensemble_outputs = _make_prediction(model, x_tensor, time_bins, config)
+        pdf = ensemble_to_pdf(ensemble_outputs, device)  # [N, K, T]
+
+    N, K, T = pdf.shape
+    eps = 1e-10
+
+    # --- BALD: I(y;θ|x) = H(y|x) - E_θ[H(y|x,θ)] ---
+
+    # H(y|x) = entropy of the averaged PDF
+    mean_pdf = pdf.mean(dim=1)  # [N, T]
+    H_y = -torch.sum(mean_pdf * torch.log(mean_pdf + eps), dim=1)  # [N]
+
+    # E_θ[H(y|x,θ)] = mean entropy of individual ensemble member PDFs
+    individual_entropies = -torch.sum(pdf * torch.log(pdf + eps), dim=2)  # [N, K]
+    E_H_y_theta = individual_entropies.mean(dim=1)  # [N]
+
+    # BALD score = mutual information
+    bald_score = H_y - E_H_y_theta  # [N]
+
+    # --- Weight by death probability in window (like C-BALD) ---
+    time_bins_np = np.array(time_bins) if not isinstance(time_bins, np.ndarray) else time_bins
+    temp_bins = np.array([0] + list(time_bins_np)[:-1])
+    censoredtime = np.array(in_data_train['time'])
+    start_bins = _map_indices(censoredtime, temp_bins).astype(int)
+    end_bins = _map_indices(censoredtime + increment, temp_bins).astype(int)
+
+    avg_probs = mean_pdf  # [N, T]
+    death_prob = torch.zeros(N, device=device)
+    for i in range(N):
+        s = int(start_bins[i])
+        e = min(int(end_bins[i]) + 1, avg_probs.shape[1])
+        death_prob[i] = avg_probs[i, s:e].sum()
+
+    # Combined score: BALD * (0.5 + 0.5 * death_prob)
+    cbaldbald_score = bald_score * (0.5 + 0.5 * death_prob)
+
+    scores = cbaldbald_score.cpu().numpy()
+    print("cbaldbald_acquire scores: ", scores)
+    selected = select_indices_from_scores(scores, budget, costlist, batch_size)
+    return selected, scores
 
 
 # ==================== CBALD_True IMPLEMENTATION ====================
@@ -455,6 +516,7 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
     # Define acquisition functions to test
     all_acquisition_functions = [
         (cbald_censored_regression, 'C-BALD', {}),
+        (cbaldbald_acquire, 'CBALDBALD', {}),
         (cbald_true_acquire, 'CBALD_True', {}),
         (variance_of_probs, 'Variance', {}),
         (entropy_of_probs, 'Entropy', {}),
