@@ -41,6 +41,8 @@ from Model_stuff.acquisition import (
     select_indices_from_scores,
     _make_prediction,
     _map_indices,
+    entropy_of_probs,
+    variance_of_probs,
 )
 from Model_stuff.utils import ensemble_to_pdf
 import ssl
@@ -302,46 +304,22 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
     np.random.seed(seed)
     torch.manual_seed(seed)
 
-    # Load SUPPORT dataset
-    support_csv = 'data/support2.csv'
-    if not os.path.exists(support_csv):
-        print("      Downloading SUPPORT dataset...")
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        url = "https://hbiostat.org/data/repo/support2csv.zip"
-        response = urllib.request.urlopen(url, context=ctx, timeout=60)
-        zf = zipfile.ZipFile(io.BytesIO(response.read()))
-        os.makedirs(os.path.dirname(support_csv), exist_ok=True)
-        zf.extract('support2.csv', 'data')
-
-    cols_to_drop = ["hospdead", "slos", "charges", "totcst", "totmcst", "avtisst", "sfdm2",
-                    "adlp", "adls", "dzgroup", "sps", "aps", "surv2m", "surv6m",
-                    "prg2m", "prg6m", "dnr", "dnrday", "hday"]
-    df = (pd.read_csv(support_csv).drop(cols_to_drop, axis=1)
-          .rename(columns={"d.time": "time", "death": "event"}))
-    df["event"] = df["event"].astype(int)
-    df["ca"] = (df["ca"] == "metastatic").astype(int)
-    fill_vals = {
-        "alb": 3.5, "pafi": 333.3, "bili": 1.01, "crea": 1.01, "bun": 6.51,
-        "wblc": 9, "urine": 2502, "edu": df["edu"].mean(), "ph": df["ph"].mean(),
-        "glucose": df["glucose"].mean(), "scoma": df["scoma"].mean(),
-        "meanbp": df["meanbp"].mean(), "hrt": df["hrt"].mean(),
-        "resp": df["resp"].mean(), "temp": df["temp"].mean(),
-        "sod": df["sod"].mean(), "income": df["income"].mode()[0],
-        "race": df["race"].mode()[0]
-    }
-    df = df.fillna(fill_vals)
-    df["sex"] = df["sex"].map({"male": 1, "female": 0})
-    df["income"] = df["income"].map({"under $11k": 0, "$11-$25k": 1, "$25-$50k": 2, ">$50k": 3})
-    skip_cols = ["event", "sex", "time", "dzclass", "race", "diabetes", "dementia", "ca"]
-    cols_standardize = [c for c in df.columns if c not in skip_cols]
+    # Load NACD dataset
+    nacd_csv = 'data/MIMIC/NACD/NACD_Full.csv'
+    df = pd.read_csv(nacd_csv)
+    cols_to_drop = ['PERFORMANCE_STATUS', 'STAGE_NUMERICAL', 'AGE65']
+    df = df.drop([c for c in cols_to_drop if c in df.columns], axis=1)
+    if "CENSORED" in df.columns:
+        df["event"] = 1 - df["CENSORED"]
+        df = df.drop(columns=["CENSORED"])
+    if "SURVIVAL" in df.columns:
+        df = df.rename(columns={"SURVIVAL": "time"})
+    cols_standardize = ['BOX1_SCORE', 'BOX2_SCORE', 'BOX3_SCORE', 'BMI', 'WEIGHT_CHANGEPOINT',
+                        'AGE', 'GRANULOCYTES', 'LDH_SERUM', 'LYMPHOCYTES',
+                        'PLATELET', 'WBC_COUNT', 'CALCIUM_SERUM', 'HGB', 'CREATININE_SERUM', 'ALBUMIN']
+    cols_standardize = [c for c in cols_standardize if c in df.columns]
     df[cols_standardize] = df[cols_standardize].apply(lambda x: (x - x.mean()) / x.std())
-    onehot_cols = ["dzclass", "race"]
-    df = pd.get_dummies(df, columns=onehot_cols, drop_first=True)
-    if "dzclass_COPD/CHF/Cirrhosis" in df.columns:
-        df = df.rename(columns={"dzclass_COPD/CHF/Cirrhosis": "dzclass_COPD"})
-    print(f"      Dataset: SUPPORT ({df.shape[0]} samples, {df.shape[1]} features)")
+    print(f"      Dataset: NACD ({df.shape[0]} samples, {df.shape[1]} features)")
 
     # Data already has 'time' and 'event' columns, features already standardized
     X = df.drop(columns=['time', 'event'])
@@ -362,7 +340,7 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
     )
 
     # Setup
-    num_bins = 10
+    num_bins = 20
     event_times = y_time_train_val[y_event_train_val == 1]
     quantiles = np.linspace(0, 1, num_bins + 1)[1:]
     time_bins = np.quantile(event_times, quantiles)
@@ -478,6 +456,8 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
     all_acquisition_functions = [
         (cbald_censored_regression, 'C-BALD', {}),
         (cbald_true_acquire, 'CBALD_True', {}),
+        (variance_of_probs, 'Variance', {}),
+        (entropy_of_probs, 'Entropy', {}),
     ]
 
     # Filter if specific methods requested
@@ -490,7 +470,7 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
         acquisition_functions = all_acquisition_functions
 
     results = {}
-    increment = 60
+    increment = 20
     costlist = np.ones(len(X_censored))
 
     for acq_func, acq_name, acq_params in acquisition_functions:
