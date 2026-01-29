@@ -60,12 +60,16 @@ def cbaldbald_acquire(model, X_pool, batch_size, time_bins, config,
                       device='cpu', in_data_train=None, increment=10000,
                       costlist=None, budget=0, **kwargs):
     """
-    CBALDBALD: Entropy-based BALD weighted by death probability.
+    CBALDBALD: Entropy-based BALD weighted by expected time variance.
 
-    Uses true BALD formulation: I(y;θ|x) = H(y|x) - E_θ[H(y|x,θ)]
-    Where y is the full PDF over time bins.
+    The key insight: BALD captures distribution uncertainty, but we care about
+    PREDICTION uncertainty (disagreement in expected survival times).
 
-    Then weights by death probability in window (like C-BALD).
+    Solution: Multiply BALD by sqrt(variance of expected times) to combine:
+    1. Information-theoretic uncertainty (BALD)
+    2. Prediction disagreement (variance of expected times)
+
+    Then weight by death probability in window (like C-BALD).
     """
     model.eval()
     with torch.no_grad():
@@ -76,38 +80,265 @@ def cbaldbald_acquire(model, X_pool, batch_size, time_bins, config,
     N, K, T = pdf.shape
     eps = 1e-10
 
-    # --- BALD: I(y;θ|x) = H(y|x) - E_θ[H(y|x,θ)] ---
-
-    # H(y|x) = entropy of the averaged PDF
+    # === BALD: I(y;θ|x) = H(y|x) - E_θ[H(y|x,θ)] ===
     mean_pdf = pdf.mean(dim=1)  # [N, T]
     H_y = -torch.sum(mean_pdf * torch.log(mean_pdf + eps), dim=1)  # [N]
-
-    # E_θ[H(y|x,θ)] = mean entropy of individual ensemble member PDFs
     individual_entropies = -torch.sum(pdf * torch.log(pdf + eps), dim=2)  # [N, K]
     E_H_y_theta = individual_entropies.mean(dim=1)  # [N]
-
-    # BALD score = mutual information
     bald_score = H_y - E_H_y_theta  # [N]
 
-    # --- Weight by death probability in window (like C-BALD) ---
+    # === Variance of expected times (prediction disagreement) ===
     time_bins_np = np.array(time_bins) if not isinstance(time_bins, np.ndarray) else time_bins
+    bin_mids = (np.concatenate([[0], time_bins_np[:-1]]) + time_bins_np) / 2
+    bin_mids_tensor = torch.tensor(bin_mids[:T], dtype=torch.float32, device=device)
+    expected_times = (pdf[:, :, :len(bin_mids_tensor)] * bin_mids_tensor).sum(dim=2)  # [N, K]
+    time_variance = expected_times.var(dim=1)  # [N]
+
+    # === Death probability in window ===
     temp_bins = np.array([0] + list(time_bins_np)[:-1])
     censoredtime = np.array(in_data_train['time'])
     start_bins = _map_indices(censoredtime, temp_bins).astype(int)
     end_bins = _map_indices(censoredtime + increment, temp_bins).astype(int)
 
-    avg_probs = mean_pdf  # [N, T]
     death_prob = torch.zeros(N, device=device)
     for i in range(N):
         s = int(start_bins[i])
-        e = min(int(end_bins[i]) + 1, avg_probs.shape[1])
-        death_prob[i] = avg_probs[i, s:e].sum()
+        e = min(int(end_bins[i]) + 1, mean_pdf.shape[1])
+        death_prob[i] = mean_pdf[i, s:e].sum()
 
-    # Combined score: BALD * (0.5 + 0.5 * death_prob)
-    cbaldbald_score = bald_score * (0.5 + 0.5 * death_prob)
+    # === Combined score: BALD * sqrt(Variance) * death_weight ===
+    # sqrt(variance) balances the scale and combines both uncertainty types
+    cbaldbald_score = bald_score * torch.sqrt(time_variance + eps) * (0.5 + 0.5 * death_prob)
 
     scores = cbaldbald_score.cpu().numpy()
     print("cbaldbald_acquire scores: ", scores)
+    selected = select_indices_from_scores(scores, budget, costlist, batch_size)
+    return selected, scores
+
+
+def cbaldbald_v2_acquire(model, X_pool, batch_size, time_bins, config,
+                         device='cpu', in_data_train=None, increment=10000,
+                         costlist=None, budget=0, **kwargs):
+    """
+    CBALDBALD_v2: BALD * Variance (full multiplicative).
+
+    Stronger weighting on prediction disagreement.
+    """
+    model.eval()
+    with torch.no_grad():
+        x_tensor = torch.FloatTensor(X_pool).to(device)
+        _, _, ensemble_outputs = _make_prediction(model, x_tensor, time_bins, config)
+        pdf = ensemble_to_pdf(ensemble_outputs, device)  # [N, K, T]
+
+    N, K, T = pdf.shape
+    eps = 1e-10
+
+    # BALD
+    mean_pdf = pdf.mean(dim=1)
+    H_y = -torch.sum(mean_pdf * torch.log(mean_pdf + eps), dim=1)
+    individual_entropies = -torch.sum(pdf * torch.log(pdf + eps), dim=2)
+    E_H_y_theta = individual_entropies.mean(dim=1)
+    bald_score = H_y - E_H_y_theta
+
+    # Variance of expected times
+    time_bins_np = np.array(time_bins) if not isinstance(time_bins, np.ndarray) else time_bins
+    bin_mids = (np.concatenate([[0], time_bins_np[:-1]]) + time_bins_np) / 2
+    bin_mids_tensor = torch.tensor(bin_mids[:T], dtype=torch.float32, device=device)
+    expected_times = (pdf[:, :, :len(bin_mids_tensor)] * bin_mids_tensor).sum(dim=2)
+    time_variance = expected_times.var(dim=1)
+
+    # Death probability
+    temp_bins = np.array([0] + list(time_bins_np)[:-1])
+    censoredtime = np.array(in_data_train['time'])
+    start_bins = _map_indices(censoredtime, temp_bins).astype(int)
+    end_bins = _map_indices(censoredtime + increment, temp_bins).astype(int)
+
+    death_prob = torch.zeros(N, device=device)
+    for i in range(N):
+        s = int(start_bins[i])
+        e = min(int(end_bins[i]) + 1, mean_pdf.shape[1])
+        death_prob[i] = mean_pdf[i, s:e].sum()
+
+    # BALD * Variance
+    score = bald_score * time_variance * (0.5 + 0.5 * death_prob)
+
+    scores = score.cpu().numpy()
+    print("cbaldbald_v2_acquire scores: ", scores)
+    selected = select_indices_from_scores(scores, budget, costlist, batch_size)
+    return selected, scores
+
+
+def cbaldbald_v3_acquire(model, X_pool, batch_size, time_bins, config,
+                         device='cpu', in_data_train=None, increment=10000,
+                         costlist=None, budget=0, **kwargs):
+    """
+    CBALDBALD_v3: Variance * (1 + normalized_BALD).
+
+    Use variance as the primary signal, BALD as a boost factor.
+    This keeps variance as the main driver while using BALD to differentiate.
+    """
+    model.eval()
+    with torch.no_grad():
+        x_tensor = torch.FloatTensor(X_pool).to(device)
+        _, _, ensemble_outputs = _make_prediction(model, x_tensor, time_bins, config)
+        pdf = ensemble_to_pdf(ensemble_outputs, device)  # [N, K, T]
+
+    N, K, T = pdf.shape
+    eps = 1e-10
+
+    # BALD
+    mean_pdf = pdf.mean(dim=1)
+    H_y = -torch.sum(mean_pdf * torch.log(mean_pdf + eps), dim=1)
+    individual_entropies = -torch.sum(pdf * torch.log(pdf + eps), dim=2)
+    E_H_y_theta = individual_entropies.mean(dim=1)
+    bald_score = H_y - E_H_y_theta
+
+    # Variance of expected times
+    time_bins_np = np.array(time_bins) if not isinstance(time_bins, np.ndarray) else time_bins
+    bin_mids = (np.concatenate([[0], time_bins_np[:-1]]) + time_bins_np) / 2
+    bin_mids_tensor = torch.tensor(bin_mids[:T], dtype=torch.float32, device=device)
+    expected_times = (pdf[:, :, :len(bin_mids_tensor)] * bin_mids_tensor).sum(dim=2)
+    time_variance = expected_times.var(dim=1)
+
+    # Death probability
+    temp_bins = np.array([0] + list(time_bins_np)[:-1])
+    censoredtime = np.array(in_data_train['time'])
+    start_bins = _map_indices(censoredtime, temp_bins).astype(int)
+    end_bins = _map_indices(censoredtime + increment, temp_bins).astype(int)
+
+    death_prob = torch.zeros(N, device=device)
+    for i in range(N):
+        s = int(start_bins[i])
+        e = min(int(end_bins[i]) + 1, mean_pdf.shape[1])
+        death_prob[i] = mean_pdf[i, s:e].sum()
+
+    # Normalize BALD to [0, 1] range as a boost factor
+    bald_min = bald_score.min()
+    bald_max = bald_score.max()
+    bald_normalized = (bald_score - bald_min) / (bald_max - bald_min + eps)
+
+    # Variance with BALD boost: variance * (1 + 0.5 * normalized_bald)
+    score = time_variance * (1 + 0.5 * bald_normalized) * (0.5 + 0.5 * death_prob)
+
+    scores = score.cpu().numpy()
+    print("cbaldbald_v3_acquire scores: ", scores)
+    selected = select_indices_from_scores(scores, budget, costlist, batch_size)
+    return selected, scores
+
+
+def cbaldbald_v4_acquire(model, X_pool, batch_size, time_bins, config,
+                         device='cpu', in_data_train=None, increment=10000,
+                         costlist=None, budget=0, **kwargs):
+    """
+    CBALDBALD_v4: Variance with selective BALD boost.
+
+    Only boost samples where BALD is above median - these are samples
+    where there's genuine distribution disagreement, not just noise.
+    """
+    model.eval()
+    with torch.no_grad():
+        x_tensor = torch.FloatTensor(X_pool).to(device)
+        _, _, ensemble_outputs = _make_prediction(model, x_tensor, time_bins, config)
+        pdf = ensemble_to_pdf(ensemble_outputs, device)  # [N, K, T]
+
+    N, K, T = pdf.shape
+    eps = 1e-10
+
+    # BALD
+    mean_pdf = pdf.mean(dim=1)
+    H_y = -torch.sum(mean_pdf * torch.log(mean_pdf + eps), dim=1)
+    individual_entropies = -torch.sum(pdf * torch.log(pdf + eps), dim=2)
+    E_H_y_theta = individual_entropies.mean(dim=1)
+    bald_score = H_y - E_H_y_theta
+
+    # Variance of expected times
+    time_bins_np = np.array(time_bins) if not isinstance(time_bins, np.ndarray) else time_bins
+    bin_mids = (np.concatenate([[0], time_bins_np[:-1]]) + time_bins_np) / 2
+    bin_mids_tensor = torch.tensor(bin_mids[:T], dtype=torch.float32, device=device)
+    expected_times = (pdf[:, :, :len(bin_mids_tensor)] * bin_mids_tensor).sum(dim=2)
+    time_variance = expected_times.var(dim=1)
+
+    # Death probability
+    temp_bins = np.array([0] + list(time_bins_np)[:-1])
+    censoredtime = np.array(in_data_train['time'])
+    start_bins = _map_indices(censoredtime, temp_bins).astype(int)
+    end_bins = _map_indices(censoredtime + increment, temp_bins).astype(int)
+
+    death_prob = torch.zeros(N, device=device)
+    for i in range(N):
+        s = int(start_bins[i])
+        e = min(int(end_bins[i]) + 1, mean_pdf.shape[1])
+        death_prob[i] = mean_pdf[i, s:e].sum()
+
+    # Selective boost: only boost samples with above-median BALD
+    bald_median = torch.median(bald_score)
+    bald_normalized = (bald_score - bald_score.min()) / (bald_score.max() - bald_score.min() + eps)
+
+    # Boost factor: 1.0 for below-median BALD, up to 1.5 for high BALD
+    boost = torch.where(bald_score > bald_median, 1.0 + 0.5 * bald_normalized, torch.ones_like(bald_score))
+
+    score = time_variance * boost * (0.5 + 0.5 * death_prob)
+
+    scores = score.cpu().numpy()
+    print("cbaldbald_v4_acquire scores: ", scores)
+    selected = select_indices_from_scores(scores, budget, costlist, batch_size)
+    return selected, scores
+
+
+def cbaldbald_v5_acquire(model, X_pool, batch_size, time_bins, config,
+                         device='cpu', in_data_train=None, increment=10000,
+                         costlist=None, budget=0, **kwargs):
+    """
+    CBALDBALD_v5: Variance * (1 + log(1 + BALD_normalized)).
+
+    Log-scaled boost to dampen the effect of extreme BALD values while
+    still providing differentiation.
+    """
+    model.eval()
+    with torch.no_grad():
+        x_tensor = torch.FloatTensor(X_pool).to(device)
+        _, _, ensemble_outputs = _make_prediction(model, x_tensor, time_bins, config)
+        pdf = ensemble_to_pdf(ensemble_outputs, device)  # [N, K, T]
+
+    N, K, T = pdf.shape
+    eps = 1e-10
+
+    # BALD
+    mean_pdf = pdf.mean(dim=1)
+    H_y = -torch.sum(mean_pdf * torch.log(mean_pdf + eps), dim=1)
+    individual_entropies = -torch.sum(pdf * torch.log(pdf + eps), dim=2)
+    E_H_y_theta = individual_entropies.mean(dim=1)
+    bald_score = H_y - E_H_y_theta
+
+    # Variance of expected times
+    time_bins_np = np.array(time_bins) if not isinstance(time_bins, np.ndarray) else time_bins
+    bin_mids = (np.concatenate([[0], time_bins_np[:-1]]) + time_bins_np) / 2
+    bin_mids_tensor = torch.tensor(bin_mids[:T], dtype=torch.float32, device=device)
+    expected_times = (pdf[:, :, :len(bin_mids_tensor)] * bin_mids_tensor).sum(dim=2)
+    time_variance = expected_times.var(dim=1)
+
+    # Death probability
+    temp_bins = np.array([0] + list(time_bins_np)[:-1])
+    censoredtime = np.array(in_data_train['time'])
+    start_bins = _map_indices(censoredtime, temp_bins).astype(int)
+    end_bins = _map_indices(censoredtime + increment, temp_bins).astype(int)
+
+    death_prob = torch.zeros(N, device=device)
+    for i in range(N):
+        s = int(start_bins[i])
+        e = min(int(end_bins[i]) + 1, mean_pdf.shape[1])
+        death_prob[i] = mean_pdf[i, s:e].sum()
+
+    # Normalize BALD to [0, 1]
+    bald_normalized = (bald_score - bald_score.min()) / (bald_score.max() - bald_score.min() + eps)
+
+    # Log-scaled boost: provides smooth, bounded boost
+    boost = 1.0 + torch.log1p(bald_normalized)  # log1p(x) = log(1+x)
+
+    score = time_variance * boost * (0.5 + 0.5 * death_prob)
+
+    scores = score.cpu().numpy()
+    print("cbaldbald_v5_acquire scores: ", scores)
     selected = select_indices_from_scores(scores, budget, costlist, batch_size)
     return selected, scores
 
@@ -516,10 +747,8 @@ def run_single_trial(trial_num, budget=20, methods_to_run=None):
     # Define acquisition functions to test
     all_acquisition_functions = [
         (cbald_censored_regression, 'C-BALD', {}),
-        (cbaldbald_acquire, 'CBALDBALD', {}),
-        (cbald_true_acquire, 'CBALD_True', {}),
-        (variance_of_probs, 'Variance', {}),
-        (entropy_of_probs, 'Entropy', {}),
+        (cbaldbald_acquire, 'CBALDBALD', {}),           # BALD * sqrt(Var) - original
+        (cbaldbald_v3_acquire, 'CBALDBALD_v3', {}),     # Var * (1 + 0.5*norm_bald) - best
     ]
 
     # Filter if specific methods requested
